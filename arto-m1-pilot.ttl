@@ -1,0 +1,792 @@
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix arto: <http://www.ub.bw/ontologies/arto#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+# ═══════════════════════════════════════════════════════════════════════
+# ARTO — M1 Artefact Module
+# Pilot Individuals File — ALL smoke test individuals in one place
+# University of Botswana · PhD Research · Tshepho Koboyatshwene
+#
+# Imports: arto-m1-step4.ttl (which imports step3 → step2 → step1)
+#
+# This file consolidates ALL pilot individuals across Steps 2–4
+# into a single authoritative source. This avoids the Protégé
+# SPARQL issue where individual re-declarations across imported
+# ontologies are silently ignored.
+#
+# Add to catalog-v001.xml:
+#   <uri name="http://www.ub.bw/ontologies/arto/m1-pilot"
+#        uri="arto-m1-pilot.ttl"/>
+#
+# CQs verified by this file:
+#   CQ1  — story→task decomposition (hasImplementingTask)
+#   CQ2  — bug→story traceability (reportedIn)
+#   CQ3a — test coverage (verifies)
+#   CQ3b — uncovered stories (MINUS on verifies)
+#   CQ5  — orphan detection (story_003 has no trace links)
+#   CQ-PROMO — RequirementCandidate promotion history (suggestion_002 → story_004 via supersedes)
+#   CQ-D1 — bug fixed in version + affected in version
+#   CQ-D2 — story contained in milestone
+#   CQ-D3 — design model refines story
+#   CQ-D4 — task realizes design model
+# ═══════════════════════════════════════════════════════════════════════
+
+<http://www.ub.bw/ontologies/arto/m1-pilot>
+    a owl:Ontology ;
+    rdfs:label "ARTO M1 Pilot Individuals"@en ;
+    rdfs:comment "Consolidated pilot individuals for smoke testing CQ1–CQ5 and CQ-D1–CQ-D4. All cross-step RT assertions declared here to avoid Protégé SPARQL import chain issues."@en ;
+    owl:imports <http://www.ub.bw/ontologies/arto/m4-semantic> ;
+    owl:versionInfo "5.2.0 — skos:exactMatch declared as object property so pilot exactMatch triples are read as object property assertions (required for SWRL R3); link_005 comment corrected" .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# PROPERTY DECLARATION (repeated from M4 on purpose)
+# Protégé 4.3 (OWL API 3.4.2) read the exactMatch triples in this file
+# as annotation assertions, so SWRL Rule R3 could not match them.
+# Declaring the property here makes the parse unambiguous.
+# ═══════════════════════════════════════════════════════════════════════
+
+skos:exactMatch a owl:ObjectProperty .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# VERSION INDIVIDUALS (Step 4)
+# Source: TAWOS Version table, Project 1 (Query 9a)
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:version_001
+    a arto:Version ;
+    arto:issueId 9001 ;
+    arto:issueKey "VERSION-001" ;
+    arto:title "Version 1.3 GA" ;
+    arto:status "Released" ;
+    arto:priority "High" ;
+    arto:issueType "Version" ;
+    arto:projectId 1 ;
+    arto:versionId 16 ;
+    arto:versionName "1.3 GA" ;
+    arto:versionType "GeneralAvailability"^^xsd:string ;
+    arto:isReleased "true"^^xsd:boolean ;
+    arto:isArchived "false"^^xsd:boolean ;
+    arto:releaseDate "2015-11-19T00:00:00"^^xsd:dateTime .
+
+arto:version_002
+    a arto:Version ;
+    arto:issueId 9002 ;
+    arto:issueKey "VERSION-002" ;
+    arto:title "Version 1.3 M1" ;
+    arto:status "Released" ;
+    arto:priority "Medium" ;
+    arto:issueType "Version" ;
+    arto:projectId 1 ;
+    arto:versionId 24 ;
+    arto:versionName "1.3 M1" ;
+    arto:versionType "Milestone"^^xsd:string ;
+    arto:isReleased "true"^^xsd:boolean ;
+    arto:isArchived "false"^^xsd:boolean ;
+    arto:releaseDate "2015-10-08T00:00:00"^^xsd:dateTime .
+
+arto:version_003
+    a arto:Version ;
+    arto:issueId 9003 ;
+    arto:issueKey "VERSION-003" ;
+    arto:title "Version 1.3 RC1" ;
+    arto:status "Released" ;
+    arto:priority "Medium" ;
+    arto:issueType "Version" ;
+    arto:projectId 1 ;
+    arto:versionId 23 ;
+    arto:versionName "1.3 RC1" ;
+    arto:versionType "ReleaseCandidate"^^xsd:string ;
+    arto:isReleased "true"^^xsd:boolean ;
+    arto:isArchived "false"^^xsd:boolean ;
+    arto:releaseDate "2015-11-03T00:00:00"^^xsd:dateTime .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# EPIC INDIVIDUAL (Step 2)
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:epic_001
+    a arto:Epic ;
+    arto:issueId 101 ;
+    arto:issueKey "PROJ-001" ;
+    arto:title "User Authentication Epic" ;
+    arto:status "In Progress" ;
+    arto:priority "High" ;
+    arto:issueType "Epic" ;
+    arto:projectId 1 ;
+    arto:hasStory arto:story_001 , arto:story_002 .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# USERSTORY INDIVIDUALS (Steps 2 + 4)
+# All RT assertions consolidated here including cross-step ones
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:story_001
+    a arto:UserStory ;
+    arto:issueId 201 ;
+    arto:issueKey "PROJ-101" ;
+    arto:title "As a user I can log in with my credentials" ;
+    arto:status "Done" ;
+    arto:priority "High" ;
+    arto:issueType "Story" ;
+    arto:projectId 1 ;
+    arto:storyPoints 5.0 ;
+    # CQ1 — story→task decomposition
+    arto:hasImplementingTask arto:task_001 , arto:task_002 ;
+    # CQ-D2 — story contained in milestone
+    arto:containedIn arto:version_002 ;
+    # Step 4 — story fixed in GA version
+    arto:fixedIn arto:version_001 .
+
+arto:story_002
+    a arto:UserStory ;
+    arto:issueId 202 ;
+    arto:issueKey "PROJ-102" ;
+    arto:title "As a user I can reset my password" ;
+    arto:status "In Progress" ;
+    arto:priority "Medium" ;
+    arto:issueType "Story" ;
+    arto:projectId 1 ;
+    arto:storyPoints 3.0 ;
+    arto:relatesTo arto:story_001 .
+
+# story_003 intentionally has NO trace links → OrphanArtefact (CQ5)
+arto:story_003
+    a arto:UserStory ;
+    arto:issueId 203 ;
+    arto:issueKey "PROJ-103" ;
+    arto:title "As an admin I can manage user accounts" ;
+    arto:status "To Do" ;
+    arto:priority "Low" ;
+    arto:issueType "Story" ;
+    arto:projectId 1 ;
+    arto:storyPoints 8.0 .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SPRINTTASK INDIVIDUALS (Steps 2 + 4)
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:task_001
+    a arto:SprintTask ;
+    arto:issueId 301 ;
+    arto:issueKey "PROJ-201" ;
+    arto:title "Implement login form validation" ;
+    arto:status "Done" ;
+    arto:priority "High" ;
+    arto:issueType "Task" ;
+    arto:projectId 1 ;
+    arto:totalEffortMinutes 240.0 ;
+    arto:isImplementedBy arto:story_001 ;
+    # CQ-D4 — task realizes design model
+    arto:realizes arto:designmodel_001 .
+
+arto:task_002
+    a arto:SprintTask ;
+    arto:issueId 302 ;
+    arto:issueKey "PROJ-202" ;
+    arto:title "Write unit tests for authentication service" ;
+    arto:status "Done" ;
+    arto:priority "High" ;
+    arto:issueType "Sub-task" ;
+    arto:projectId 1 ;
+    arto:totalEffortMinutes 180.0 ;
+    arto:isImplementedBy arto:story_001 ;
+    arto:dependsOn arto:task_001 .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# BUG INDIVIDUALS (Steps 2 + 4)
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:bug_001
+    a arto:Bug ;
+    arto:issueId 401 ;
+    arto:issueKey "PROJ-301" ;
+    arto:title "Login fails with special characters in password" ;
+    arto:status "Open" ;
+    arto:priority "High" ;
+    arto:issueType "Bug" ;
+    arto:projectId 1 ;
+    arto:resolution "Unresolved" ;
+    # CQ2 — bug reported in story
+    arto:reportedIn arto:story_001 ;
+    arto:causes arto:bug_002 ;
+    # CQ-D1 — bug affected in RC1, fixed in GA
+    arto:affectedIn arto:version_003 ;
+    arto:fixedIn arto:version_001 .
+
+arto:bug_002
+    a arto:Bug ;
+    arto:issueId 402 ;
+    arto:issueKey "PROJ-302" ;
+    arto:title "Session token not invalidated on logout" ;
+    arto:status "Open" ;
+    arto:priority "Medium" ;
+    arto:issueType "Bug" ;
+    arto:projectId 1 ;
+    arto:resolution "Unresolved" ;
+    arto:reportedIn arto:story_001 ;
+    arto:duplicates arto:bug_001 ;
+    arto:affectedIn arto:version_003 .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SUGGESTION INDIVIDUAL (Step 2)
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:suggestion_001
+    a arto:Suggestion ;
+    arto:issueId 501 ;
+    arto:issueKey "PROJ-401" ;
+    arto:title "Add OAuth2 social login support" ;
+    arto:status "Open" ;
+    arto:priority "Low" ;
+    arto:issueType "Suggestion" ;
+    arto:projectId 1 ;
+    arto:isAccepted "false"^^xsd:boolean ;
+    arto:references arto:story_001 .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# REQUIREMENTCANDIDATE PROMOTION DEMONSTRATION (Step 3 supersedes pattern)
+# CQ-PROMO — RequirementCandidate → UserStory promotion history
+#
+# suggestion_002 is accepted (isAccepted = true). ETL responds by
+# minting story_004 as a new UserStory individual and linking it back
+# via arto:supersedes — suggestion_002 itself is NOT reclassified: its
+# type, isAccepted flag, and any pre-acceptance trace links remain
+# exactly as asserted, giving a permanent, queryable acceptance record.
+# This is the adopted promotion mechanism; see the rdfs:comment on
+# arto:isAccepted (Step 1) and arto:supersedes (Step 3) for why a live
+# SWRL reclassification was not used (RequirementCandidate/UserStory
+# disjointness would make the ontology inconsistent).
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:suggestion_002
+    a arto:Suggestion ;
+    arto:issueId 502 ;
+    arto:issueKey "PROJ-402" ;
+    arto:title "Add dark mode to settings panel" ;
+    arto:status "Closed" ;
+    arto:priority "Medium" ;
+    arto:issueType "Suggestion" ;
+    arto:projectId 1 ;
+    arto:isAccepted "true"^^xsd:boolean .
+
+# story_004 — the promoted UserStory. Note it carries NO rdf:type
+# arto:Suggestion or arto:RequirementCandidate; it is a distinct
+# individual from suggestion_002, connected only via supersedes.
+arto:story_004
+    a arto:UserStory ;
+    arto:issueId 204 ;
+    arto:issueKey "PROJ-104" ;
+    arto:title "As a user I can enable dark mode in settings" ;
+    arto:status "To Do" ;
+    arto:priority "Medium" ;
+    arto:issueType "Story" ;
+    arto:projectId 1 ;
+    arto:storyPoints 3.0 ;
+    # CQ-PROMO — promoted UserStory documents its RequirementCandidate origin
+    arto:supersedes arto:suggestion_002 .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# TESTCASE INDIVIDUALS (Step 3)
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:testcase_001
+    a arto:TestCase ;
+    arto:issueId 601 ;
+    arto:issueKey "PROJ-501" ;
+    arto:title "Verify login with valid credentials" ;
+    arto:status "Done" ;
+    arto:priority "High" ;
+    arto:issueType "Test Task" ;
+    arto:projectId 1 ;
+    arto:testType "Test Task" ;
+    arto:testEnvironment "Staging" ;
+    # CQ3a — test case verifies story
+    arto:verifies arto:story_001 .
+
+arto:testcase_002
+    a arto:TestCase ;
+    arto:issueId 602 ;
+    arto:issueKey "PROJ-502" ;
+    arto:title "Verify login fails with invalid credentials" ;
+    arto:status "Done" ;
+    arto:priority "High" ;
+    arto:issueType "Test Task" ;
+    arto:projectId 1 ;
+    arto:testType "Test Task" ;
+    arto:testEnvironment "Staging" ;
+    arto:verifies arto:story_001 ;
+    arto:verifies arto:bug_001 .
+
+arto:testresult_001
+    a arto:TestResult ;
+    arto:issueId 701 ;
+    arto:issueKey "PROJ-601" ;
+    arto:title "Test result: login with special characters" ;
+    arto:status "Closed" ;
+    arto:priority "High" ;
+    arto:issueType "Test" ;
+    arto:projectId 1 ;
+    arto:passed "false"^^xsd:boolean ;
+    arto:executionDate "2023-03-15T10:30:00"^^xsd:dateTime ;
+    arto:defectsFound 1 ;
+    arto:testedBy "QA_Engineer_01" ;
+    arto:relatesTo arto:testcase_002 .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# CODECOMMIT INDIVIDUAL (Step 3)
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:commit_001
+    a arto:CodeCommit ;
+    arto:issueId 801 ;
+    arto:issueKey "PROJ-701" ;
+    arto:title "Fix login validation for special characters" ;
+    arto:status "Done" ;
+    arto:priority "High" ;
+    arto:issueType "CodeCommit" ;
+    arto:projectId 1 ;
+    arto:commitHash "a3f8d91c4e2b567890abcdef1234567890abcdef" ;
+    arto:commitMessage "Fix PROJ-301 — handle special chars in password" ;
+    arto:commitDate "2023-03-16T14:22:00"^^xsd:dateTime ;
+    arto:repositoryUrl "https://github.com/project/auth-service"^^xsd:anyURI ;
+    arto:branchName "fix/login-special-chars" ;
+    arto:authorId "dev_001" ;
+    arto:changedFiles 3 ;
+    arto:pullRequestUrl "https://github.com/project/auth-service/pull/42"^^xsd:anyURI ;
+    arto:tracesTo arto:task_001 ;
+    arto:fixes arto:bug_001 .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# DESIGN ARTEFACT INDIVIDUAL (Step 4)
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:designmodel_001
+    a arto:DesignModel ;
+    arto:issueId 8001 ;
+    arto:issueKey "DESIGN-001" ;
+    arto:title "Authentication Service Class Diagram" ;
+    arto:status "Approved" ;
+    arto:priority "High" ;
+    arto:issueType "DesignModel" ;
+    arto:projectId 1 ;
+    arto:designLevel "Component" ;
+    arto:modellingTool "UML" ;
+    arto:designVersion "v1.2" ;
+    arto:approvalDate "2023-01-15T09:00:00"^^xsd:dateTime ;
+    # CQ-D3 — design model refines story
+    arto:refines arto:story_001 .
+
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# STEP 5 PILOT INDIVIDUALS
+# MaintenanceArtefact leaf classes + Sprint + belongsToSprint
+# CQ smoke tests:
+#   CQ-M1 — documentation artefact documents a story
+#   CQ-M2 — support request relates to a bug
+#   CQ-M3 — story belongs to a sprint
+#   CQ-M4 — which artefacts belong to a given sprint?
+# ═══════════════════════════════════════════════════════════════════════
+
+# Sprint individual from TAWOS (Query 14 — Spring XD Sprint 12)
+arto:sprint_001
+    a arto:Sprint ;
+    arto:sprintId 55 ;
+    arto:jiraSprintId 55 ;
+    arto:sprintName "Sprint 12" ;
+    arto:sprintState "CLOSED"^^xsd:string ;
+    arto:startDate "2013-07-22T17:07:05"^^xsd:dateTime ;
+    arto:endDate "2013-07-31T17:07:00"^^xsd:dateTime ;
+    arto:completeDate "2013-08-12T16:23:53"^^xsd:dateTime ;
+    arto:sprintProjectId 1 .
+
+# Documentation individual
+arto:doc_001
+    a arto:Documentation ;
+    arto:issueId 10001 ;
+    arto:issueKey "PROJ-801" ;
+    arto:title "Authentication API Documentation" ;
+    arto:status "Done" ;
+    arto:priority "Medium" ;
+    arto:issueType "Documentation" ;
+    arto:projectId 1 ;
+    arto:documentType "API documentation" ;
+    # CQ-M1 — documents story
+    arto:documents arto:story_001 ;
+    arto:documents arto:task_001 ;
+    arto:belongsToSprint arto:sprint_001 .
+
+# SupportRequest individual
+arto:support_001
+    a arto:SupportRequest ;
+    arto:issueId 10002 ;
+    arto:issueKey "PROJ-802" ;
+    arto:title "User cannot login after password reset" ;
+    arto:status "Open" ;
+    arto:priority "High" ;
+    arto:issueType "Support Request" ;
+    arto:projectId 1 ;
+    arto:supportChannel "Community forum" ;
+    # CQ-M2 — support request relates to bug
+    arto:relatesTo arto:bug_001 ;
+    arto:addresses arto:story_001 .
+
+# BuildFailure individual
+arto:build_001
+    a arto:BuildFailure ;
+    arto:issueId 10003 ;
+    arto:issueKey "PROJ-803" ;
+    arto:title "CI build failed on authentication module" ;
+    arto:status "Open" ;
+    arto:priority "High" ;
+    arto:issueType "Build Failure" ;
+    arto:projectId 1 ;
+    arto:buildSystem "Jenkins" ;
+    arto:failedStage "test" ;
+    arto:relatesTo arto:bug_001 .
+
+# ProblemTicket individual
+arto:problem_001
+    a arto:ProblemTicket ;
+    arto:issueId 10004 ;
+    arto:issueKey "PROJ-804" ;
+    arto:title "Recurring login failures across multiple projects" ;
+    arto:status "Open" ;
+    arto:priority "High" ;
+    arto:issueType "Problem Ticket" ;
+    arto:projectId 1 ;
+    arto:relatesTo arto:bug_001 ;
+    arto:relatesTo arto:bug_002 .
+
+# Update story_001 and task_001 to belong to sprint_001
+arto:story_001
+    arto:belongsToSprint arto:sprint_001 .
+
+arto:task_001
+    arto:belongsToSprint arto:sprint_001 .
+
+arto:task_002
+    arto:belongsToSprint arto:sprint_001 .
+
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# M2 PILOT INDIVIDUALS — TraceLink smoke tests
+# CQ6 — inferred vs asserted link ratio
+# CQ7 — link type distribution
+# CQ-SDLC1 — full lifecycle chain query
+# ═══════════════════════════════════════════════════════════════════════
+
+# AssertedLink — story_001 hasImplementingTask task_001
+# from TAWOS Issue_Links (ETL-populated)
+arto:link_001
+    a arto:AssertedLink , arto:ForwardSDLCLink ;
+    arto:linkId 1001 ;
+    arto:linkName "hasImplementingTask"^^xsd:string ;
+    arto:linkDirection "outward"^^xsd:string ;
+    arto:isInferred "false"^^xsd:boolean ;
+    arto:confidenceScore 1.0 ;
+    arto:assertionMethod "ETL"^^xsd:string ;
+    arto:sdlcLinkDirection "Forward"^^xsd:string ;
+    arto:sourcePhase "Requirements"^^xsd:string ;
+    arto:targetPhase "Implementation"^^xsd:string ;
+    arto:hasSourceArtefact arto:story_001 ;
+    arto:hasTargetArtefact arto:task_001 ;
+    arto:hasLinkType arto:DependencyLink_Type .
+
+# AssertedLink — bug_001 reportedIn story_001
+# BackwardSDLCLink — Maintenance→Requirements
+arto:link_002
+    a arto:AssertedLink , arto:BackwardSDLCLink ;
+    arto:linkId 1002 ;
+    arto:linkName "reportedIn"^^xsd:string ;
+    arto:linkDirection "outward"^^xsd:string ;
+    arto:isInferred "false"^^xsd:boolean ;
+    arto:confidenceScore 1.0 ;
+    arto:assertionMethod "ETL"^^xsd:string ;
+    arto:sdlcLinkDirection "Backward"^^xsd:string ;
+    arto:sourcePhase "Maintenance"^^xsd:string ;
+    arto:targetPhase "Requirements"^^xsd:string ;
+    arto:hasSourceArtefact arto:bug_001 ;
+    arto:hasTargetArtefact arto:story_001 ;
+    arto:hasLinkType arto:DefectLink_Type .
+
+# AssertedLink — testcase_001 verifies story_001
+# CrossCuttingLink — Testing→Requirements
+arto:link_003
+    a arto:AssertedLink , arto:CrossCuttingLink ;
+    arto:linkId 1003 ;
+    arto:linkName "verifies"^^xsd:string ;
+    arto:linkDirection "outward"^^xsd:string ;
+    arto:isInferred "false"^^xsd:boolean ;
+    arto:confidenceScore 1.0 ;
+    arto:assertionMethod "ETL"^^xsd:string ;
+    arto:sdlcLinkDirection "CrossCutting"^^xsd:string ;
+    arto:sourcePhase "Testing"^^xsd:string ;
+    arto:targetPhase "Requirements"^^xsd:string ;
+    arto:hasSourceArtefact arto:testcase_001 ;
+    arto:hasTargetArtefact arto:story_001 ;
+    arto:hasLinkType arto:DesignLink_Type .
+
+# AssertedLink — bug_001 affectedIn version_003
+# ForwardSDLCLink — Maintenance→Deployment
+arto:link_004
+    a arto:AssertedLink , arto:ForwardSDLCLink ;
+    arto:linkId 1004 ;
+    arto:linkName "affectedIn"^^xsd:string ;
+    arto:linkDirection "outward"^^xsd:string ;
+    arto:isInferred "false"^^xsd:boolean ;
+    arto:confidenceScore 1.0 ;
+    arto:assertionMethod "ETL"^^xsd:string ;
+    arto:sdlcLinkDirection "Forward"^^xsd:string ;
+    arto:sourcePhase "Maintenance"^^xsd:string ;
+    arto:targetPhase "Deployment"^^xsd:string ;
+    arto:hasSourceArtefact arto:bug_001 ;
+    arto:hasTargetArtefact arto:version_003 ;
+    arto:hasLinkType arto:DeploymentLink_Type .
+
+# InferredLink — story_001 impacts task_001
+# Pilot example of a link of the kind SWRL Rule R1 derives
+# (UserStory hasImplementingTask SprintTask -> impacts).
+# Asserted here as pilot data; it was not produced by a reasoner run.
+arto:link_005
+    a arto:InferredLink , arto:ForwardSDLCLink ;
+    arto:linkId 1005 ;
+    arto:linkName "impacts"^^xsd:string ;
+    arto:linkDirection "outward"^^xsd:string ;
+    arto:isInferred "true"^^xsd:boolean ;
+    arto:confidenceScore 1.0 ;
+    arto:assertionMethod "SWRL"^^xsd:string ;
+    arto:sdlcLinkDirection "Forward"^^xsd:string ;
+    arto:sourcePhase "Requirements"^^xsd:string ;
+    arto:targetPhase "Implementation"^^xsd:string ;
+    arto:hasSourceArtefact arto:story_001 ;
+    arto:hasTargetArtefact arto:task_001 ;
+    arto:hasLinkType arto:DependencyLink_Type ;
+    arto:isRelatedTraceLink arto:link_001 .
+
+# Assert impacts property on pilot individuals for CQ4
+# (asserted pilot data showing R1's conclusions, not reasoner output)
+arto:story_001
+    arto:impacts arto:task_001 ;
+    arto:impacts arto:task_002 .
+
+arto:bug_001
+    arto:impacts arto:story_001 .
+
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# M3 PILOT INDIVIDUALS
+# SprintBacklog + BacklogItem + sprint metrics
+# CQ smoke tests:
+#   CQ-M3-1 — sprint backlog contents
+#   CQ-M3-2 — sprint velocity and throughput
+#   CQ-M3-3 — backlog item completion status
+#   CQ-M3-4 — full chain: sprint → backlog → item → artefact
+# ═══════════════════════════════════════════════════════════════════════
+
+# Update sprint_001 with metrics (from Query 17 — BACKEND Sprint 17)
+arto:sprint_001
+    arto:velocity 1099.0 ;
+    arto:throughput 84 ;
+    arto:totalIssues 85 ;
+    arto:completionRate 98.8 ;
+    arto:sprintGoal "Complete authentication and login module" ;
+    arto:hasBacklog arto:backlog_001 .
+
+# SprintBacklog individual
+arto:backlog_001
+    a arto:SprintBacklog ;
+    arto:backlogId 55 ;
+    arto:backlogSize 3 ;
+    arto:plannedVelocity 16.0 ;
+    arto:isBacklogOf arto:sprint_001 ;
+    arto:hasBacklogItem arto:item_001 ,
+                        arto:item_002 ,
+                        arto:item_003 .
+
+# BacklogItem 1 — story_001 in sprint_001
+arto:item_001
+    a arto:BacklogItem ;
+    arto:backlogItemOrder 1 ;
+    arto:isCompleted "true"^^xsd:boolean ;
+    arto:carriedOver "false"^^xsd:boolean ;
+    arto:refersToArtefact arto:story_001 ;
+    arto:inBacklog arto:backlog_001 .
+
+# BacklogItem 2 — task_001 in sprint_001
+arto:item_002
+    a arto:BacklogItem ;
+    arto:backlogItemOrder 2 ;
+    arto:isCompleted "true"^^xsd:boolean ;
+    arto:carriedOver "false"^^xsd:boolean ;
+    arto:refersToArtefact arto:task_001 ;
+    arto:inBacklog arto:backlog_001 .
+
+# BacklogItem 3 — story_002 in sprint_001 (not completed — carried over)
+arto:item_003
+    a arto:BacklogItem ;
+    arto:backlogItemOrder 3 ;
+    arto:isCompleted "false"^^xsd:boolean ;
+    arto:carriedOver "true"^^xsd:boolean ;
+    arto:refersToArtefact arto:story_002 ;
+    arto:inBacklog arto:backlog_001 .
+
+# Sprint 2 — follows sprint_001
+arto:sprint_002
+    a arto:Sprint ;
+    arto:sprintId 56 ;
+    arto:jiraSprintId 56 ;
+    arto:sprintName "Sprint 13" ;
+    arto:sprintState "CLOSED"^^xsd:string ;
+    arto:startDate "2013-08-12T16:23:53"^^xsd:dateTime ;
+    arto:endDate "2013-08-26T16:23:00"^^xsd:dateTime ;
+    arto:completeDate "2013-08-26T16:23:53"^^xsd:dateTime ;
+    arto:sprintProjectId 1 ;
+    arto:velocity 820.0 ;
+    arto:throughput 72 ;
+    arto:totalIssues 75 ;
+    arto:completionRate 96.0 ;
+    arto:sprintGoal "Complete password reset and admin module" ;
+    arto:followsSprint arto:sprint_001 .
+
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# M4 PILOT INDIVIDUALS
+# TermVariant + SynonymCluster + DriftEvent + skos:exactMatch
+# CQ smoke tests:
+#   CQ8-1 — synonym detection: two artefacts linked via exactMatch
+#   CQ8-2 — synonym cluster contents
+#   CQ8-3 — drift event detection
+#   CQ8-4 — R3 propagation: trace links shared across synonyms
+# ═══════════════════════════════════════════════════════════════════════
+
+# SynonymCluster — authentication/login concept
+arto:cluster_auth
+    a arto:SynonymCluster ;
+    arto:clusterLabel "authentication"^^xsd:string ;
+    arto:clusterSize 2 ;
+    arto:clusterConfidence 0.92 ;
+    arto:resolvedByWordNet "true"^^xsd:boolean ;
+    arto:hasVariant arto:variant_login ,
+                    arto:variant_auth .
+
+# TermVariant 1 — "login" in Project 1
+arto:variant_login
+    a arto:TermVariant ;
+    arto:canonicalLabel "login"^^xsd:string ;
+    arto:rawLabel "Login Story"^^xsd:string ;
+    arto:projectSource 1 ;
+    arto:termFrequency 47 ;
+    arto:termType "UserStory"^^xsd:string ;
+    arto:refersToIssue arto:story_001 ;
+    arto:inCluster arto:cluster_auth .
+
+# TermVariant 2 — "authentication" in Project 2 (synonym)
+arto:variant_auth
+    a arto:TermVariant ;
+    arto:canonicalLabel "authentication"^^xsd:string ;
+    arto:rawLabel "Authentication Story"^^xsd:string ;
+    arto:projectSource 2 ;
+    arto:termFrequency 31 ;
+    arto:termType "UserStory"^^xsd:string ;
+    arto:refersToIssue arto:story_equiv ;
+    arto:inCluster arto:cluster_auth .
+
+# Equivalent story in Project 2 (synonym of story_001)
+arto:story_equiv
+    a arto:UserStory ;
+    arto:issueId 999 ;
+    arto:issueKey "PROJ2-101" ;
+    arto:title "Authentication Story" ;
+    arto:status "Done" ;
+    arto:priority "High" ;
+    arto:issueType "Story" ;
+    arto:projectId 2 ;
+    arto:storyPoints 5.0 .
+
+# skos:exactMatch between story_001 and story_equiv
+# This triggers SWRL Rule R3 — trace links of story_001
+# propagate to story_equiv
+arto:story_001
+    skos:exactMatch arto:story_equiv .
+
+# DriftEvent — story_001 title changed from "Login Story"
+# to "User Authentication Story" (Change_Log sample)
+arto:drift_001
+    a arto:DriftEvent ;
+    arto:driftEventId 88001 ;
+    arto:fromLabel "Login Story"^^xsd:string ;
+    arto:toLabel "User Authentication Story"^^xsd:string ;
+    arto:driftDate "2023-02-10T09:15:00"^^xsd:dateTime ;
+    arto:driftAuthorId 42 ;
+    arto:driftIssueId 201 ;
+    arto:driftType "TitleDrift"^^xsd:string ;
+    arto:affectsArtefact arto:story_001 .
+
+# Link variant_login to the drift event
+arto:variant_login
+    arto:triggeredDrift arto:drift_001 .
+
+# Second SynonymCluster — bug/defect concept
+arto:cluster_defect
+    a arto:SynonymCluster ;
+    arto:clusterLabel "defect"^^xsd:string ;
+    arto:clusterSize 2 ;
+    arto:clusterConfidence 0.97 ;
+    arto:resolvedByWordNet "true"^^xsd:boolean ;
+    arto:hasVariant arto:variant_bug ,
+                    arto:variant_defect .
+
+arto:variant_bug
+    a arto:TermVariant ;
+    arto:canonicalLabel "bug"^^xsd:string ;
+    arto:rawLabel "Login fails with special characters"^^xsd:string ;
+    arto:projectSource 1 ;
+    arto:termFrequency 215570 ;
+    arto:termType "Bug"^^xsd:string ;
+    arto:refersToIssue arto:bug_001 ;
+    arto:inCluster arto:cluster_defect .
+
+arto:variant_defect
+    a arto:TermVariant ;
+    arto:canonicalLabel "defect"^^xsd:string ;
+    arto:rawLabel "Authentication defect special chars"^^xsd:string ;
+    arto:projectSource 2 ;
+    arto:termFrequency 89 ;
+    arto:termType "Bug"^^xsd:string ;
+    arto:refersToIssue arto:bug_equiv ;
+    arto:inCluster arto:cluster_defect .
+
+# Equivalent bug in Project 2
+arto:bug_equiv
+    a arto:Bug ;
+    arto:issueId 998 ;
+    arto:issueKey "PROJ2-301" ;
+    arto:title "Authentication defect special chars" ;
+    arto:status "Open" ;
+    arto:priority "High" ;
+    arto:issueType "Bug" ;
+    arto:projectId 2 ;
+    arto:resolution "Unresolved" .
+
+# skos:exactMatch between bug_001 and bug_equiv
+arto:bug_001
+    skos:exactMatch arto:bug_equiv .
+

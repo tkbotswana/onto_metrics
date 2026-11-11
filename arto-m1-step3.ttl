@@ -1,0 +1,492 @@
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix arto: <http://www.ub.bw/ontologies/arto#> .
+
+# ═══════════════════════════════════════════════════════════════════════
+# ARTO — M1 Artefact Module
+# Middle-out Step 3: TestingArtefact + CodeCommit + deferred RT properties
+# University of Botswana · PhD Research · Tshepho Koboyatshwene
+#
+# Imports: arto-m1-step2-v2.ttl (which imports arto-m1-step1-v5.ttl)
+#
+# Add to catalog-v001.xml:
+#   <uri name="http://www.ub.bw/ontologies/arto/m1-step3"
+#        uri="arto-m1-step3.ttl"/>
+#
+# New SDLC abstract class:
+#   arto:TestingArtefact      (SDLC: Testing phase)
+#
+# New leaf classes:
+#   arto:TestCase             Issue.Type IN ('Test','Test Task')
+#                             WHERE Sprint_ID IS NOT NULL (353 total)
+#   arto:TestResult           Literature-grounded — no TAWOS individuals
+#                             Forward-compatible: pending test execution
+#                             data integration
+#   arto:CodeCommit           Literature-grounded — no TAWOS individuals
+#                             Forward-compatible: pending Git integration
+#                             Bridge: arto:pullRequestUrl on
+#                             ImplementationArtefact connects to 646
+#                             TAWOS issues with Pull_Request_URL
+#
+# TAWOS grounding evidence (Query 6):
+#   Test          → 17  individuals (Issue.Type = 'Test')
+#   Test Task     → 336 individuals (Issue.Type = 'Test Task')
+#   Pull_Request  → 646 issues with Pull_Request_URL (Story:347,
+#                   Bug:154, Improvement:76, Technical task:27,
+#                   New Feature:24, Task:18)
+#
+# New RT object properties (deferred from Step 2); figures below
+# verified via direct OUTBOUND-only COUNT, Oct 2026 audit —
+# supersedes earlier estimates that double-counted both link
+# directions:
+#   verifies      ← Tested/QA Test/Bonfire Testing/Regression (5,426)
+#   fixes         ← Fixes/Resolve                    (130 links)
+#   derives       ← Derived/Issue split/Split         (570 links)
+#   supersedes    ← Supersession/Supercedes/Supersede (600 links)
+#   tracesTo      ← CodeCommit→SprintTask (literature-grounded)
+#
+# Evaluation scope decision:
+#   CodeCommit and TestResult excluded from Part 9 precision/recall
+#   calculation — zero TAWOS individuals means zero TP/FP/FN.
+#   Documented as dataset limitation (L3) not ontology limitation.
+#   Per-class metrics table in thesis reports N/A for these classes.
+#
+# Updated catalog-v001.xml must contain all three URI mappings:
+#   m1-step1 → arto-m1-step1-v5.ttl
+#   m1-step2 → arto-m1-step2-v2.ttl
+#   m1-step3 → arto-m1-step3.ttl
+#
+# Load into Protégé 5.6:
+#   File → Open → arto-m1-step3.ttl
+#   Protégé resolves imports: step3 → step2 → step1
+#   Reasoner → HermiT → Start reasoner
+#   Expected: 17 satisfiable classes, 0 unsatisfiable
+#   New classes visible: TestingArtefact · TestCase ·
+#                        TestResult · CodeCommit
+#
+# CQ smoke tests after loading:
+#   CQ3a — which stories have no test coverage?
+#           (SPARQL NOT EXISTS on verifies)
+#   CQ3b — which test cases verify a given story?
+#           (verifies property chain)
+# ═══════════════════════════════════════════════════════════════════════
+
+<http://www.ub.bw/ontologies/arto/m1-step3>
+    a owl:Ontology ;
+    rdfs:label "ARTO M1 Step 3"@en ;
+    rdfs:comment "ARTO M1 Artefact Module — Step 3: TestingArtefact (TestCase, TestResult), CodeCommit, and deferred RT properties (verifies, fixes, derives, supersedes, tracesTo)."@en ;
+    owl:imports <http://www.ub.bw/ontologies/arto/m1-step2> ;
+    owl:versionInfo "1.0.0 — step 3: TestingArtefact + CodeCommit + deferred RT properties" .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# TESTINGARTERFACT-SPECIFIC DATA PROPERTIES
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:testScript
+    a owl:DatatypeProperty ;
+    rdfs:label "test script"@en ;
+    rdfs:comment "The test script or procedure associated with this TestCase. Literature-grounded: IEEE 829 standard for software test documentation."@en ;
+    rdfs:domain arto:TestCase ;
+    rdfs:range xsd:string .
+
+arto:testType
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "test type"@en ;
+    rdfs:comment "TAWOS: Issue.Type (String). Values: Test · Test Task. Preserved via arto:issueType but typed here for TestCase-specific querying."@en ;
+    rdfs:domain arto:TestCase ;
+    rdfs:range xsd:string .
+
+arto:testEnvironment
+    a owl:DatatypeProperty ;
+    rdfs:label "test environment"@en ;
+    rdfs:comment "The environment in which this test case is executed e.g. staging, production, CI. Literature-grounded."@en ;
+    rdfs:domain arto:TestCase ;
+    rdfs:range xsd:string .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# TESTRESULT-SPECIFIC DATA PROPERTIES
+# No TAWOS source — literature-grounded from IEEE 829 and
+# Maro et al. (2022) TracIMo test traceability framework
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:passed
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "passed"@en ;
+    rdfs:comment "Whether this test result passed or failed. Literature-grounded: IEEE 829. True = passed, False = failed. Key property for CQ3 test coverage analysis — failed TestResult individuals trigger defect traceability chain."@en ;
+    rdfs:domain arto:TestResult ;
+    rdfs:range xsd:boolean .
+
+arto:executionDate
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "execution date"@en ;
+    rdfs:comment "When this test was executed. Literature-grounded: IEEE 829. Supports temporal traceability analysis across sprints."@en ;
+    rdfs:domain arto:TestResult ;
+    rdfs:range xsd:dateTime .
+
+arto:defectsFound
+    a owl:DatatypeProperty ;
+    rdfs:label "defects found"@en ;
+    rdfs:comment "Number of defects discovered during this test execution. Literature-grounded. When > 0, connects TestResult to Bug individuals via isCausedBy property chain."@en ;
+    rdfs:domain arto:TestResult ;
+    rdfs:range xsd:integer .
+
+arto:testedBy
+    a owl:DatatypeProperty ;
+    rdfs:label "tested by"@en ;
+    rdfs:comment "The tester or automated system that executed this test. Literature-grounded: Maro et al. (2022) TracIMo. Connects to Developer/Agent in M3."@en ;
+    rdfs:domain arto:TestResult ;
+    rdfs:range xsd:string .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# CODECOMMIT-SPECIFIC DATA PROPERTIES
+# No TAWOS Issue.Type = 'Commit' exists in dataset (Query 6/7).
+# Properties grounded in: Git SCM documentation and Agile framework
+# glossaries. Conceptually echoes the Satisfaction category of
+# Ramesh and Jarke (2001) — connecting an artefact to the downstream
+# artefact that fulfils it — without claiming a specific named
+# sub-type from their taxonomy (see Chapter 6, Section 6.5).
+# pullRequestUrl bridges to 646 TAWOS issues with Pull_Request_URL.
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:commitHash
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "commit hash"@en ;
+    rdfs:comment "The unique SHA hash identifying this commit in the Git repository. Literature-grounded: Git SCM. Primary key for CodeCommit individuals in future Git-integrated datasets."@en ;
+    rdfs:domain arto:CodeCommit ;
+    rdfs:range xsd:string .
+
+arto:commitMessage
+    a owl:DatatypeProperty ;
+    rdfs:label "commit message"@en ;
+    rdfs:comment "The developer-authored message describing changes in this commit. Literature-grounded. Key field for NLP-based traceability recovery in planned BERT hybrid extension."@en ;
+    rdfs:domain arto:CodeCommit ;
+    rdfs:range xsd:string .
+
+arto:commitDate
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "commit date"@en ;
+    rdfs:comment "Timestamp of when this commit was pushed to the repository. Literature-grounded. Enables temporal RT chain analysis — commits after story closure indicate scope creep."@en ;
+    rdfs:domain arto:CodeCommit ;
+    rdfs:range xsd:dateTime .
+
+arto:repositoryUrl
+    a owl:DatatypeProperty ;
+    rdfs:label "repository URL"@en ;
+    rdfs:comment "URL of the Git repository containing this commit. Partially grounded: TAWOS Repository table contains 12 project repository URLs (Query 7). Full population pending Git API integration."@en ;
+    rdfs:domain arto:CodeCommit ;
+    rdfs:range xsd:anyURI .
+
+arto:branchName
+    a owl:DatatypeProperty ;
+    rdfs:label "branch name"@en ;
+    rdfs:comment "The Git branch on which this commit was made. Literature-grounded: Git SCM branching model. Forward-compatible: pending Git integration."@en ;
+    rdfs:domain arto:CodeCommit ;
+    rdfs:range xsd:string .
+
+arto:authorId
+    a owl:DatatypeProperty ;
+    rdfs:label "author ID"@en ;
+    rdfs:comment "The developer who authored this commit. Literature-grounded. Connects to Developer/Agent individuals in M3 via AgentRole ODP. Forward-compatible: pending Git integration."@en ;
+    rdfs:domain arto:CodeCommit ;
+    rdfs:range xsd:string .
+
+arto:pullRequestUrl
+    a owl:DatatypeProperty ;
+    rdfs:label "pull request URL"@en ;
+    rdfs:comment "TAWOS bridge property: Issue.Pull_Request_URL (String). The one TAWOS field connecting issues to code-level artefacts. Present on 646 TAWOS issues (Story:347, Bug:154, Improvement:76, Technical task:27, New Feature:24, Task:18). Declared on ImplementationArtefact so all sprint-assigned artefacts can carry it."@en ;
+    rdfs:domain arto:ImplementationArtefact ;
+    rdfs:range xsd:anyURI .
+
+arto:changedFiles
+    a owl:DatatypeProperty ;
+    rdfs:label "changed files"@en ;
+    rdfs:comment "Number of files modified in this commit. Literature-grounded: Git commit metadata. Forward-compatible property — large values signal high-risk commits for defect traceability. Pending Git integration."@en ;
+    rdfs:domain arto:CodeCommit ;
+    rdfs:range xsd:integer .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SDLC ABSTRACT CLASS 4: arto:TestingArtefact
+# SDLC Phase: Testing
+# Leaf classes: TestCase · TestResult
+# Introduced in Step 3 — TAWOS grounding: Test (17) + Test Task (336)
+# Generalisation: any dataset's testing artefacts
+#                 (QATicket, TestSuite, TestPlan) subclass here
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:TestingArtefact
+    a owl:Class ;
+    rdfs:label "Testing Artefact"@en ;
+    rdfs:comment "Abstract SDLC Testing phase class. Groups TestCase and TestResult. TAWOS grounding: Test (17) + Test Task (336) = 353 individuals. Generalisation point for non-TAWOS datasets — QATicket, TestSuite, TestPlan subclass here. Leaf classes: TestCase, TestResult."@en ;
+    rdfs:subClassOf arto:AgileArtefact ;
+    owl:disjointWith arto:RequirementsArtefact ;
+    owl:disjointWith arto:ImplementationArtefact ;
+    owl:disjointWith arto:DefectArtefact .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# CLASS: arto:TestCase
+# SDLC: TestingArtefact → TestCase
+# TAWOS: Issue.Type IN ('Test','Test Task') WHERE Sprint_ID IS NOT NULL
+# Counts: Test (17) + Test Task (336) = 353 total
+# Evaluation scope: INCLUDED in Part 9 (thin but non-zero population)
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:TestCase
+    a owl:Class ;
+    rdfs:label "Test Case"@en ;
+    rdfs:comment "A specification of conditions under which a UserStory or SprintTask is verified. TAWOS: Issue.Type IN (Test, Test Task) WHERE Sprint_ID IS NOT NULL (353 total). Thin TAWOS population — Test (17) + Test Task (336). Included in Part 9 evaluation with expected low recall due to dataset sparsity. Distinct from TestResult: TestCase is the specification, TestResult is the execution outcome."@en ;
+    rdfs:subClassOf arto:TestingArtefact ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:testScript ;
+          owl:minCardinality 0 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:testType ;
+          owl:minCardinality 0 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:testEnvironment ;
+          owl:minCardinality 0 ] ;
+
+    owl:disjointWith arto:TestResult .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# CLASS: arto:TestResult
+# SDLC: TestingArtefact → TestResult
+# TAWOS: No direct Issue.Type equivalent
+# Evaluation scope: EXCLUDED from Part 9 (zero TAWOS individuals)
+# Forward-compatible: pending test execution data integration
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:TestResult
+    a owl:Class ;
+    rdfs:label "Test Result"@en ;
+    rdfs:comment "The outcome of executing a TestCase against a UserStory or SprintTask. Literature-grounded: IEEE 829. No TAWOS individuals — TAWOS does not store test execution outcomes. Excluded from Part 9 precision/recall evaluation (zero TP/FP/FN). Forward-compatible infrastructure: pending test execution data integration. When passed = false, connects to Bug individuals via isCausedBy property chain."@en ;
+    rdfs:subClassOf arto:TestingArtefact ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:passed ;
+          owl:cardinality 1 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:executionDate ;
+          owl:cardinality 1 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:defectsFound ;
+          owl:minCardinality 0 ] ;
+
+    owl:disjointWith arto:TestCase .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# CLASS: arto:CodeCommit
+# SDLC: ImplementationArtefact → CodeCommit
+# TAWOS: No Issue.Type = 'Commit' exists (confirmed Query 6/7)
+# Bridge: pullRequestUrl on ImplementationArtefact connects 646
+#         TAWOS issues to code-level artefacts
+# Evaluation scope: EXCLUDED from Part 9 (zero TAWOS individuals)
+# Forward-compatible: pending Git API integration
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:CodeCommit
+    a owl:Class ;
+    rdfs:label "Code Commit"@en ;
+    rdfs:comment "A unit of source code change pushed to a version control repository, implementing one or more SprintTasks. Literature-grounded: Git SCM and Agile framework glossaries; conceptually echoes the Satisfaction category of Ramesh and Jarke (2001) without claiming a specific named sub-type. No TAWOS individuals — TAWOS Repository table stores Jira instance URLs not Git repositories (Query 7). TAWOS Pull_Request_URL (646 issues) bridges to code level via arto:pullRequestUrl. Excluded from Part 9 evaluation — documented as dataset limitation L3. Forward-compatible: full population pending Git API integration or future dataset with commit-level data."@en ;
+    rdfs:subClassOf arto:ImplementationArtefact ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:commitHash ;
+          owl:cardinality 1 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:commitMessage ;
+          owl:minCardinality 0 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:commitDate ;
+          owl:cardinality 1 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:repositoryUrl ;
+          owl:minCardinality 0 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:branchName ;
+          owl:minCardinality 0 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:authorId ;
+          owl:minCardinality 0 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:changedFiles ;
+          owl:minCardinality 0 ] ;
+
+    owl:disjointWith arto:SprintTask .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# DEFERRED RT OBJECT PROPERTIES
+# Properties requiring TestCase/CodeCommit classes (Step 2 deferred).
+# All SubPropertyOf hasTraceLink — consistent with Step 2 design.
+# ═══════════════════════════════════════════════════════════════════════
+
+# ── verifies / isVerifiedBy ───────────────────────────────────────────
+# Evidence (OUTBOUND-only, Oct 2026 audit): Tested (44) + QA Test (28) + Bonfire Testing
+#   (2,936) + Regression (2,418, reassigned here from an earlier,
+#   incorrect grouping with causes) = 5,426 links
+# Domain: TestCase — only test artefacts verify stories/tasks
+# Range: AgileArtefact — tests verify stories, tasks, and bugs
+# Core CQ3 property — central to test coverage analysis
+
+arto:verifies
+    a owl:ObjectProperty , owl:AsymmetricProperty , owl:IrreflexiveProperty ;
+    rdfs:label "verifies"@en ;
+    rdfs:comment "A TestCase verifies a UserStory, SprintTask or Bug. TAWOS: Tested/QA Test/Bonfire Testing/Regression (5426 links, verified via direct OUTBOUND-only COUNT against the live TAWOS database, Oct 2026 audit; Regression is included here, reassigned from an earlier, incorrect grouping with causes — it is a test-relationship synonym, not a defect-causation link). Asymmetric and Irreflexive. Core CQ3 property — stories with no incoming verifies link are test coverage gaps. Domain restricted to TestCase."@en ;
+    rdfs:domain arto:TestCase ;
+    rdfs:range arto:AgileArtefact ;
+    rdfs:subPropertyOf arto:hasTraceLink .
+
+arto:isVerifiedBy
+    a owl:ObjectProperty ;
+    rdfs:label "is verified by"@en ;
+    rdfs:comment "Inverse of arto:verifies. Inferred by HermiT — not asserted in ETL."@en ;
+    rdfs:domain arto:AgileArtefact ;
+    rdfs:range arto:TestCase ;
+    owl:inverseOf arto:verifies .
+
+
+# ── tracesTo / isTracedFrom ───────────────────────────────────────────
+# Evidence: Literature-grounded — echoes the Satisfaction category of
+#   Ramesh and Jarke (2001); no specific named sub-type is claimed
+# TAWOS: pullRequestUrl bridges Story/Bug/Improvement to code level
+# Domain: CodeCommit — commits trace to the tasks they implement
+# Range: SprintTask — the implementation unit being committed against
+# Central to RT chain: Epic→Story→SprintTask←CodeCommit
+
+arto:tracesTo
+    a owl:ObjectProperty , owl:AsymmetricProperty ;
+    rdfs:label "traces to"@en ;
+    rdfs:comment "A CodeCommit traces to the SprintTask it implements. Literature-grounded, echoing the Satisfaction category of Ramesh and Jarke (2001) rather than a specific named sub-type. TAWOS bridge: Pull_Request_URL on 646 issues connects to code level. Asymmetric. Completes the RT chain: Epic → UserStory → SprintTask ← CodeCommit."@en ;
+    rdfs:domain arto:CodeCommit ;
+    rdfs:range arto:SprintTask ;
+    rdfs:subPropertyOf arto:hasTraceLink .
+
+arto:isTracedFrom
+    a owl:ObjectProperty ;
+    rdfs:label "is traced from"@en ;
+    rdfs:comment "Inverse of arto:tracesTo. Inferred by HermiT — not asserted in ETL."@en ;
+    rdfs:domain arto:SprintTask ;
+    rdfs:range arto:CodeCommit ;
+    owl:inverseOf arto:tracesTo .
+
+
+# ── fixes / isFixedBy ─────────────────────────────────────────────────
+# Evidence (OUTBOUND-only, Oct 2026 audit): Fixes (98) + Resolve (32) = 130 links
+# Domain: SprintTask or CodeCommit — implementation artefacts fix bugs
+# Range: Bug — fixes targets defect artefacts only
+# Connects ImplementationArtefact to DefectArtefact in RT chain
+
+arto:fixes
+    a owl:ObjectProperty , owl:AsymmetricProperty , owl:IrreflexiveProperty ;
+    rdfs:label "fixes"@en ;
+    rdfs:comment "An ImplementationArtefact (SprintTask or CodeCommit) fixes a Bug. TAWOS: Fixes/Resolve (130 links, verified via direct OUTBOUND-only COUNT against the live TAWOS database, Oct 2026 audit). Asymmetric and Irreflexive. Connects ImplementationArtefact to DefectArtefact — closes the defect traceability loop in the RT chain."@en ;
+    rdfs:domain arto:ImplementationArtefact ;
+    rdfs:range arto:Bug ;
+    rdfs:subPropertyOf arto:hasTraceLink .
+
+arto:isFixedBy
+    a owl:ObjectProperty ;
+    rdfs:label "is fixed by"@en ;
+    rdfs:comment "Inverse of arto:fixes. Inferred by HermiT — not asserted in ETL."@en ;
+    rdfs:domain arto:Bug ;
+    rdfs:range arto:ImplementationArtefact ;
+    owl:inverseOf arto:fixes .
+
+
+# ── derives / isDerivedFrom ───────────────────────────────────────────
+# Evidence: Derived (374) + Issue split (110) + Split (86) = 570
+#   links (verified via direct OUTBOUND-only COUNT, Oct 2026 audit;
+#   supersedes an earlier estimate that double-counted both link
+#   directions)
+# Domain: AgileArtefact — any artefact can derive from another
+# Range: AgileArtefact — derivation is cross-type
+# Echoes the Evolution category of Ramesh and Jarke (2001); no
+# specific named sub-type is claimed
+
+arto:derives
+    a owl:ObjectProperty , owl:AsymmetricProperty , owl:IrreflexiveProperty ;
+    rdfs:label "derives"@en ;
+    rdfs:comment "One artefact is derived from another through refinement or splitting. TAWOS: Derived/Issue split/Split (570 links, verified via direct OUTBOUND-only COUNT, Oct 2026 audit). Asymmetric and Irreflexive. Echoes the Evolution category of Ramesh and Jarke (2001) rather than a specific named sub-type. Common pattern: large UserStory split into smaller stories (Issue split)."@en ;
+    rdfs:domain arto:AgileArtefact ;
+    rdfs:range arto:AgileArtefact ;
+    rdfs:subPropertyOf arto:hasTraceLink .
+
+arto:isDerivedFrom
+    a owl:ObjectProperty ;
+    rdfs:label "is derived from"@en ;
+    rdfs:comment "Inverse of arto:derives. Inferred by HermiT — not asserted in ETL."@en ;
+    rdfs:domain arto:AgileArtefact ;
+    rdfs:range arto:AgileArtefact ;
+    owl:inverseOf arto:derives .
+
+
+# ── supersedes / isSupersededBy ───────────────────────────────────────
+# Evidence (OUTBOUND-only, Oct 2026 audit): Supersession (381) + Supercedes (180) +
+#   Supersede (39) = 600 links
+# Domain: AgileArtefact — any artefact can supersede another
+# Range: AgileArtefact — supersession is cross-type
+#
+# ADOPTED MECHANISM for RequirementCandidate → UserStory promotion.
+# An earlier design (Step 1, through v3) planned a SWRL rule that would
+# reclassify an accepted RequirementCandidate individual to UserStory in
+# place. That plan was abandoned: RequirementCandidate and UserStory are
+# owl:disjointWith each other (Step 1), so a live SWRL reclassification
+# would render the ontology inconsistent under OWL-DL the moment the
+# rule fired, and SWRL's monotonicity means the original type could
+# never be retracted even if disjointness were relaxed. supersedes
+# instead lets ETL mint a *new* UserStory individual when
+# isAccepted = true and link it back to the original RequirementCandidate
+# individual (e.g. story_004 arto:supersedes suggestion_002). This is
+# non-monotonic at the ETL layer rather than the reasoner layer, keeps
+# both classes cleanly disjoint, and preserves the original individual —
+# with every trace link it accumulated pre-acceptance — untouched and
+# permanently queryable as the acceptance history.
+
+arto:supersedes
+    a owl:ObjectProperty , owl:AsymmetricProperty , owl:IrreflexiveProperty ;
+    rdfs:label "supersedes"@en ;
+    rdfs:comment "One artefact replaces or obsoletes another. TAWOS: Supersession/Supercedes/Supersede (600 links, verified via direct OUTBOUND-only COUNT against the live TAWOS database, Oct 2026 audit). Asymmetric and Irreflexive. Adopted mechanism for RequirementCandidate→UserStory promotion — a Suggestion/Improvement/NewFeature superseded by a UserStory documents the acceptance decision trail without reclassifying the original individual (see arto:isAccepted in Step 1 for the disjointness rationale)."@en ;
+    rdfs:domain arto:AgileArtefact ;
+    rdfs:range arto:AgileArtefact ;
+    rdfs:subPropertyOf arto:hasTraceLink .
+
+arto:isSupersededBy
+    a owl:ObjectProperty ;
+    rdfs:label "is superseded by"@en ;
+    rdfs:comment "Inverse of arto:supersedes. Inferred by HermiT — not asserted in ETL."@en ;
+    rdfs:domain arto:AgileArtefact ;
+    rdfs:range arto:AgileArtefact ;
+    owl:inverseOf arto:supersedes .

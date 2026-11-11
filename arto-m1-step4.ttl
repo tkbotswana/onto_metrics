@@ -1,0 +1,597 @@
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix arto: <http://www.ub.bw/ontologies/arto#> .
+
+# ═══════════════════════════════════════════════════════════════════════
+# ARTO — M1 Artefact Module
+# Middle-out Step 4: DesignArtefact + DeploymentArtefact +
+#                    PartOf ODP formal annotation +
+#                    Event ODP (Sprint) +
+#                    refines · realizes · fixedIn · affectedIn ·
+#                    containedIn RT properties
+# University of Botswana · PhD Research · Tshepho Koboyatshwene
+#
+# Imports: arto-m1-step3.ttl (which imports step2 → step1)
+#
+# Add to catalog-v001.xml:
+#   <uri name="http://www.ub.bw/ontologies/arto/m1-step4"
+#        uri="arto-m1-step4.ttl"/>
+#
+# New SDLC abstract classes:
+#   arto:DesignArtefact       (SDLC: Design phase)
+#   arto:DeploymentArtefact   (SDLC: Deployment phase)
+#
+# New leaf classes:
+#   Under DesignArtefact:
+#     arto:ArchitectureDocument  Literature-grounded (0 TAWOS)
+#     arto:DesignModel           Literature-grounded (0 TAWOS)
+#     arto:Prototype             Literature-grounded (0 TAWOS)
+#   Under DeploymentArtefact:
+#     arto:Version               Version table (5,639 records)
+#     arto:PlannedRelease        Issue.Type = 'Release' (4 individuals)
+#
+# New Event ODP class:
+#   arto:Sprint                  M1 preview — Event ODP instantiation
+#                                Full M1 Sprint module in Step 5
+#
+# TAWOS grounding evidence (Queries 9a-12):
+#   Version table    → 5,639 records across 37 projects
+#   Released         → boolean field on Version table
+#   Archived         → boolean field on Version table
+#   Fix_Version      → 224,254 total rows (verified via direct COUNT,
+#                      Oct 2026 audit; supersedes an earlier per-Type
+#                      breakdown that undercounted by summing distinct-
+#                      Bug-with-a-fix-version rather than total rows)
+#   Affected_Version → 264,004 total rows (verified via direct COUNT,
+#                      same audit; same correction applies)
+#   Milestone        → Issue.Type = Milestone (44 individuals)
+#                      Containment-named links targeting Milestone: 0
+#                      (verified via direct COUNT, Oct 2026 audit; an
+#                      earlier estimate of 55 is superseded — all
+#                      'Containment' rows in this dataset target
+#                      ordinary artefacts, not Milestones, and are
+#                      counted under hasPart instead)
+#   Release          → Issue.Type = Release (4 individuals)
+#   EnhancementRequest → ETL-filtered; handled in M4 via
+#                        skos:exactMatch to Improvement
+#
+# Key design decisions:
+#   D1 — DesignArtefact introduced with 3 subclasses for
+#        multi-dataset comparability (addresses L3). Zero TAWOS
+#        individuals — excluded from TAWOS evaluation scope.
+#        Framed as contribution not placeholder.
+#   D2 — Version single flat class with versionType data property
+#        (Milestone/ReleaseCandidate/GeneralAvailability).
+#        ETL string matching on Version.Name unreliable across
+#        37 projects with inconsistent naming conventions.
+#   D3 — EnhancementRequest ETL-filtered; mapped to Improvement
+#        via skos:exactMatch in M4 (912 sprint-assigned individuals
+#        too similar to Improvement to warrant separate class).
+#   D4 — PartOf ODP formally annotated here via
+#        rdfs:isDefinedBy on hasPart (re-declared with annotation).
+#   D5 — Event ODP instantiated: Sprint SubClassOf arto:Event.
+#        Full Sprint module built in Step 5.
+#   D6 — refines and realizes extend the network's coverage of
+#        design-to-requirement and implementation-to-design
+#        relationships, echoing the Satisfaction category of Ramesh
+#        and Jarke (2001) without claiming specific named sub-types
+#        from their taxonomy (previously zero TAWOS evidence — now
+#        grounded in DesignArtefact for multi-dataset comparability).
+#
+# Evaluation scope:
+#   TAWOS evaluation (Part 9):
+#     INCLUDED:  Version · PlannedRelease · fixedIn · affectedIn ·
+#                containedIn
+#     EXCLUDED:  DesignArtefact subclasses · refines · realizes
+#                (zero TAWOS individuals)
+#   Future dataset evaluation:
+#     INCLUDED:  DesignArtefact subclasses · refines · realizes
+#     Filtered:  per-dataset scope declaration
+#
+# Load into Protégé 5.6:
+#   File → Open → arto-m1-step4.ttl
+#   Protégé resolves: step4 → step3 → step2 → step1
+#   Reasoner → HermiT → Start reasoner
+#   Expected: 24 satisfiable classes, 0 unsatisfiable
+#   New classes: DesignArtefact · ArchitectureDocument ·
+#                DesignModel · Prototype · DeploymentArtefact ·
+#                Version · PlannedRelease · Sprint · Event
+#
+# CQ smoke tests after loading:
+#   CQ-D1 — which versions fixed a given bug?
+#            (Bug affectedIn Version + fixedIn Version)
+#   CQ-D2 — which stories are contained in a milestone?
+#            (UserStory containedIn Version)
+# ═══════════════════════════════════════════════════════════════════════
+
+<http://www.ub.bw/ontologies/arto/m1-step4>
+    a owl:Ontology ;
+    rdfs:label "ARTO M1 Step 4"@en ;
+    rdfs:comment "ARTO M1 Artefact Module — Step 4: DesignArtefact, DeploymentArtefact, Event ODP (Sprint), PartOf ODP formal annotation, and new RT properties (refines, realizes, fixedIn, affectedIn, containedIn)."@en ;
+    owl:imports <http://www.ub.bw/ontologies/arto/m1-step3> ;
+    owl:versionInfo "1.0.0 — step 4: DesignArtefact + DeploymentArtefact + Event ODP + RT properties" .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# PARTOF ODP FORMAL ANNOTATION
+# Re-declares hasPart with formal ODP source reference.
+# Addresses the S3 implementation gap identified in review.
+# Source: http://www.ontologydesignpatterns.org/cp/owl/partof.owl
+# ARTO instantiation: AgileArtefact plays both Part and Whole roles
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:hasPart
+    rdfs:isDefinedBy
+        <http://www.ontologydesignpatterns.org/cp/owl/partof.owl> ;
+    rdfs:comment "Formally instantiates PartOf Content ODP (S7). Source: http://www.ontologydesignpatterns.org/cp/owl/partof.owl. ARTO instantiation: AgileArtefact plays both Part and Whole roles — UserStory hasPart SprintTask (via hasImplementingTask), Suggestion hasPart SubSuggestion. Re-declared here with formal ODP annotation — property axioms defined in Step 2."@en .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# EVENT ODP ANCHOR CLASS
+# Introduced here to support Sprint instantiation in Step 5.
+# Source: http://www.ontologydesignpatterns.org/cp/owl/timeindexedsituation.owl
+# Provides: hasEventStatus (hasTimeInterval removed — vestigial ODP anchor,
+#            unused; superseded by Sprint.startDate/endDate data properties.
+#            Removed during V3 pitfall-scan remediation — see OOPS! P11.)
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:Event
+    a owl:Class ;
+    rdfs:label "Event"@en ;
+    rdfs:comment "Abstract Time Indexed Situation ODP anchor class (S7). Source: http://www.ontologydesignpatterns.org/cp/owl/timeindexedsituation.owl. Instantiated by arto:Sprint in Step 5 — a Sprint is a time-bounded Event with a defined start date, end date, and status. Introduced here as an anchor for the Event ODP before the full M3 Sprint module is built."@en .
+
+arto:hasEventStatus
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "has event status"@en ;
+    rdfs:comment "Event ODP property. The current state of this Event e.g. Planned, Active, Completed. Mapped to Sprint.State in TAWOS in Step 5."@en ;
+    rdfs:domain arto:Event ;
+    rdfs:range xsd:string .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SPRINT — Event ODP Preview
+# Minimal declaration here to anchor the Event ODP.
+# Full Sprint module with all properties built in Step 5.
+# TAWOS: Sprint table (Start_Date · End_Date · State · Project_ID)
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:Sprint
+    a owl:Class ;
+    rdfs:label "Sprint"@en ;
+    rdfs:comment "A time-bounded Agile iteration containing a set of UserStories and SprintTasks. Instantiates Time Indexed Situation ODP (S7) — Sprint SubClassOf arto:Event. TAWOS: Sprint table with Start_Date, End_Date, State, Project_ID. Full Sprint module with all properties, belongsToSprint, and M3 bridge axioms built in Step 5."@en ;
+    rdfs:subClassOf arto:Event ;
+    rdfs:isDefinedBy
+        <http://www.ontologydesignpatterns.org/cp/owl/timeindexedsituation.owl> .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# DESIGNARTEFACT-SPECIFIC DATA PROPERTIES
+# Literature-grounded: IEEE 42010 (Architecture Description),
+# UML 2.5 specification, Agile framework design practices.
+# No TAWOS source — properties defined for multi-dataset
+# comparability (addresses L3).
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:designLevel
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "design level"@en ;
+    rdfs:comment "The abstraction level of this design artefact. Values: System, Subsystem, Component, Module. Literature-grounded: IEEE 42010 Architecture Description standard."@en ;
+    rdfs:domain arto:DesignArtefact ;
+    rdfs:range xsd:string .
+
+arto:modellingTool
+    a owl:DatatypeProperty ;
+    rdfs:label "modelling tool"@en ;
+    rdfs:comment "The tool or notation used to produce this design artefact e.g. UML, ArchiMate, C4, ERD. Literature-grounded."@en ;
+    rdfs:domain arto:DesignArtefact ;
+    rdfs:range xsd:string .
+
+arto:designVersion
+    a owl:DatatypeProperty ;
+    rdfs:label "design version"@en ;
+    rdfs:comment "Version number of this design document e.g. v1.0, v2.3. Literature-grounded. Supports design evolution traceability."@en ;
+    rdfs:domain arto:DesignArtefact ;
+    rdfs:range xsd:string .
+
+arto:approvedBy
+    a owl:DatatypeProperty ;
+    rdfs:label "approved by"@en ;
+    rdfs:comment "ID of the reviewer or architect who approved this design artefact. Literature-grounded. Connects to Developer/Agent when M3 is built."@en ;
+    rdfs:domain arto:DesignArtefact ;
+    rdfs:range xsd:integer .
+
+arto:approvalDate
+    a owl:DatatypeProperty ;
+    rdfs:label "approval date"@en ;
+    rdfs:comment "Date when this design artefact was formally approved. Literature-grounded."@en ;
+    rdfs:domain arto:DesignArtefact ;
+    rdfs:range xsd:dateTime .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# DEPLOYMENTARTEFACT-SPECIFIC DATA PROPERTIES
+# Source: TAWOS Version table fields (Query 9a/9b)
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:versionName
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "version name"@en ;
+    rdfs:comment "TAWOS: Version.Name (String). Human-readable version identifier e.g. '1.3 GA', '2.0 M1', '1.3 RC1'. Raw string preserved — ETL parses this to set versionType."@en ;
+    rdfs:domain arto:Version ;
+    rdfs:range xsd:string .
+
+arto:versionType
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "version type"@en ;
+    rdfs:comment "Classification of this version derived from Version.Name by ETL. Values: Milestone (Name contains M1/M2/M3) · ReleaseCandidate (Name contains RC) · GeneralAvailability (Name contains GA or Released=1) · Planned (Release_Date IS NULL) · Other. Single flat class design — lifecycle distinction handled here rather than via subclasses due to inconsistent naming across 37 TAWOS projects."@en ;
+    rdfs:domain arto:Version ;
+    rdfs:range xsd:string .
+
+arto:isReleased
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "is released"@en ;
+    rdfs:comment "TAWOS: Version.Released (Boolean). True = this version has been shipped to users. Directly maps from TAWOS Version table boolean field."@en ;
+    rdfs:domain arto:Version ;
+    rdfs:range xsd:boolean .
+
+arto:isArchived
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "is archived"@en ;
+    rdfs:comment "TAWOS: Version.Archived (Boolean). True = this version is no longer actively maintained. Directly maps from TAWOS Version table boolean field."@en ;
+    rdfs:domain arto:Version ;
+    rdfs:range xsd:boolean .
+
+arto:releaseDate
+    a owl:DatatypeProperty ;
+    rdfs:label "release date"@en ;
+    rdfs:comment "TAWOS: Version.Release_Date (DateTime). When this version was released. NULL for unshipped versions. Key property for temporal RT chain analysis — commits after releaseDate indicate post-release defects."@en ;
+    rdfs:domain arto:Version ;
+    rdfs:range xsd:dateTime .
+
+arto:versionId
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "version ID"@en ;
+    rdfs:comment "TAWOS: Version.ID (Int). Primary key of the Version table. Used as owl:hasKey for Version individuals."@en ;
+    rdfs:domain arto:Version ;
+    rdfs:range xsd:integer .
+
+arto:jiraVersionId
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "Jira version ID"@en ;
+    rdfs:comment "TAWOS: Version.Jira_ID (Int). The Jira-internal version identifier. Preserved for provenance and cross-project version matching in M4."@en ;
+    rdfs:domain arto:Version ;
+    rdfs:range xsd:integer .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SDLC ABSTRACT CLASS 5: arto:DesignArtefact
+# SDLC Phase: Design
+# Leaf classes: ArchitectureDocument · DesignModel · Prototype
+# TAWOS grounding: NONE — zero TAWOS Issue.Type equivalents
+# Purpose: multi-dataset comparability (addresses L3)
+# Excluded from TAWOS Part 9 evaluation scope
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:DesignArtefact
+    a owl:Class ;
+    rdfs:label "Design Artefact"@en ;
+    rdfs:comment "Abstract SDLC Design phase class. Groups ArchitectureDocument, DesignModel, and Prototype. Zero TAWOS individuals — no design-specific Issue.Type exists in TAWOS (confirmed Query 12). Introduced for multi-dataset comparability (addresses limitation L3) — any dataset with design artefacts maps here without ontology modification. Excluded from TAWOS Part 9 evaluation scope. Generalisation point for non-TAWOS datasets using hybrid Agile-waterfall methodologies."@en ;
+    rdfs:subClassOf arto:AgileArtefact ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:designLevel ;
+          owl:minCardinality 0 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:designVersion ;
+          owl:minCardinality 0 ] ;
+
+    owl:disjointWith arto:RequirementsArtefact ;
+    owl:disjointWith arto:ImplementationArtefact ;
+    owl:disjointWith arto:TestingArtefact ;
+    owl:disjointWith arto:DefectArtefact ;
+    owl:disjointWith arto:DeploymentArtefact .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# CLASS: arto:ArchitectureDocument
+# SDLC: DesignArtefact → ArchitectureDocument
+# Literature: IEEE 42010 Architecture Description standard
+# TAWOS: zero individuals — excluded from TAWOS evaluation
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:ArchitectureDocument
+    a owl:Class ;
+    rdfs:label "Architecture Document"@en ;
+    rdfs:comment "A formal description of the system architecture at system or component level. Literature-grounded: IEEE 42010. Zero TAWOS individuals. Excluded from TAWOS Part 9 evaluation. Examples: system architecture specification, component interaction diagram, deployment diagram."@en ;
+    rdfs:subClassOf arto:DesignArtefact ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:modellingTool ;
+          owl:minCardinality 0 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:approvedBy ;
+          owl:minCardinality 0 ] ;
+
+    owl:disjointWith arto:DesignModel ;
+    owl:disjointWith arto:Prototype .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# CLASS: arto:DesignModel
+# SDLC: DesignArtefact → DesignModel
+# Literature: UML 2.5 specification, C4 model, ArchiMate 3.1
+# TAWOS: zero individuals — excluded from TAWOS evaluation
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:DesignModel
+    a owl:Class ;
+    rdfs:label "Design Model"@en ;
+    rdfs:comment "A formal or semi-formal model representing system structure or behaviour. Literature-grounded: UML 2.5, C4 model, ArchiMate 3.1. Zero TAWOS individuals. Excluded from TAWOS Part 9 evaluation. Examples: class diagram, sequence diagram, data model, API specification, entity-relationship diagram."@en ;
+    rdfs:subClassOf arto:DesignArtefact ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:modellingTool ;
+          owl:minCardinality 0 ] ;
+
+    owl:disjointWith arto:ArchitectureDocument ;
+    owl:disjointWith arto:Prototype .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# CLASS: arto:Prototype
+# SDLC: DesignArtefact → Prototype
+# Literature: Agile framework design practices, lean UX
+# TAWOS: zero individuals — excluded from TAWOS evaluation
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:Prototype
+    a owl:Class ;
+    rdfs:label "Prototype"@en ;
+    rdfs:comment "A preliminary working model or mockup used to validate design decisions. Literature-grounded: Agile framework design practices, lean UX. Zero TAWOS individuals. Excluded from TAWOS Part 9 evaluation. Examples: UI wireframe, clickable mockup, proof-of-concept implementation, paper prototype."@en ;
+    rdfs:subClassOf arto:DesignArtefact ;
+
+    owl:disjointWith arto:ArchitectureDocument ;
+    owl:disjointWith arto:DesignModel .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SDLC ABSTRACT CLASS 6: arto:DeploymentArtefact
+# SDLC Phase: Deployment
+# Leaf classes: Version · PlannedRelease
+# TAWOS grounding: Version table (5,639 records) +
+#                  Issue.Type = Release (4 individuals) +
+#                  Issue.Type = Milestone (44 individuals)
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:DeploymentArtefact
+    a owl:Class ;
+    rdfs:label "Deployment Artefact"@en ;
+    rdfs:comment "Abstract SDLC Deployment phase class. Groups Version and PlannedRelease. TAWOS grounding: Version table (5,639 records across 37 projects) + Issue.Type = Release (4) + Milestone (44). Strongly grounded — Fix_Version junction table holds 224,254 total rows and Affected_Version holds 264,004 total rows (verified via direct COUNT, Oct 2026 audit), linking Bug, Improvement, Task, Story, and New Feature individuals to Version instances."@en ;
+    rdfs:subClassOf arto:AgileArtefact ;
+
+    owl:disjointWith arto:RequirementsArtefact ;
+    owl:disjointWith arto:ImplementationArtefact ;
+    owl:disjointWith arto:TestingArtefact ;
+    owl:disjointWith arto:DefectArtefact ;
+    owl:disjointWith arto:DesignArtefact .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# CLASS: arto:Version
+# SDLC: DeploymentArtefact → Version
+# TAWOS: Version table (5,639 records across 37 projects)
+# Single flat class — lifecycle distinction via versionType property
+# Fix_Version: 224,254 total rows (verified via direct COUNT)
+# Affected_Version: 264,004 total rows (verified via direct COUNT)
+# Also absorbs: Issue.Type = Milestone (44) via versionType = Milestone
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:Version
+    a owl:Class ;
+    rdfs:label "Version"@en ;
+    rdfs:comment "A named point in the software release lifecycle — milestone, release candidate, or general availability release. TAWOS: Version table (5,639 records). Single flat class with versionType data property (Milestone/ReleaseCandidate/GeneralAvailability/Planned/Other) — subclasses avoided due to inconsistent naming conventions across 37 TAWOS projects (Query 9a). Also absorbs Issue.Type = Milestone (44 individuals) via versionType = Milestone. Primary RT hub for deployment-level traceability: Fix_Version junction table holds 224,254 total rows; Affected_Version holds 264,004 total rows (verified via direct COUNT, Oct 2026 audit; both figures supersede an earlier, lower per-artefact-type breakdown that undercounted by summing distinct-Bug-with-a-version-entry rather than total junction rows)."@en ;
+    rdfs:subClassOf arto:DeploymentArtefact ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:versionId ;
+          owl:cardinality 1 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:versionName ;
+          owl:cardinality 1 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:versionType ;
+          owl:cardinality 1 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:isReleased ;
+          owl:cardinality 1 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:isArchived ;
+          owl:cardinality 1 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:releaseDate ;
+          owl:minCardinality 0 ] ;
+
+    owl:hasKey ( arto:versionId ) ;
+    owl:disjointWith arto:PlannedRelease .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# CLASS: arto:PlannedRelease
+# SDLC: DeploymentArtefact → PlannedRelease
+# TAWOS: Issue.Type = 'Release' (4 individuals)
+# Distinct from Version — PlannedRelease is an Issue-level artefact
+# representing the planned release event, not the Version record
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:PlannedRelease
+    a owl:Class ;
+    rdfs:label "Planned Release"@en ;
+    rdfs:comment "A planned release event tracked as a Jira issue. TAWOS: Issue.Type = Release (4 individuals). Distinct from arto:Version — PlannedRelease is an Issue-level planning artefact while Version is a Version-table record. All 4 PlannedRelease individuals have Fix_Version populated (Query 11) — directly linked to Version instances via fixedIn property."@en ;
+    rdfs:subClassOf arto:DeploymentArtefact ;
+    owl:disjointWith arto:Version .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# NEW RT OBJECT PROPERTIES — Step 4
+# ═══════════════════════════════════════════════════════════════════════
+
+# ── refines / isRefinedBy ─────────────────────────────────────────────
+# Evidence: Literature-grounded — echoes the Satisfaction category of
+#   Ramesh and Jarke (2001); no specific named sub-type is claimed
+# TAWOS: zero occurrences (waterfall-era link type)
+# Domain: DesignArtefact — design artefacts refine requirements
+# Range: RequirementsArtefact — refinement targets requirements
+# Excluded from TAWOS evaluation — included for conceptual
+# completeness and multi-dataset comparability
+
+arto:refines
+    a owl:ObjectProperty , owl:AsymmetricProperty , owl:IrreflexiveProperty ;
+    rdfs:label "refines"@en ;
+    rdfs:comment "A DesignArtefact refines a RequirementsArtefact by adding implementation detail. Literature-grounded, echoing the Satisfaction category of Ramesh and Jarke (2001) rather than a specific named sub-type. Zero TAWOS occurrences — waterfall-era link type absent from Jira-based Agile projects. Excluded from TAWOS Part 9 evaluation. Included for conceptual completeness and multi-dataset comparability."@en ;
+    rdfs:domain arto:DesignArtefact ;
+    rdfs:range arto:RequirementsArtefact ;
+    rdfs:subPropertyOf arto:hasTraceLink .
+
+arto:isRefinedBy
+    a owl:ObjectProperty ;
+    rdfs:label "is refined by"@en ;
+    rdfs:comment "Inverse of arto:refines. Inferred by HermiT — not asserted in ETL."@en ;
+    rdfs:domain arto:RequirementsArtefact ;
+    rdfs:range arto:DesignArtefact ;
+    owl:inverseOf arto:refines .
+
+
+# ── realizes / isRealizedBy ───────────────────────────────────────────
+# Evidence: Literature-grounded — echoes the Satisfaction category of
+#   Ramesh and Jarke (2001); no specific named sub-type is claimed
+# TAWOS: Implements — 11 occurrences (verified via direct
+#   OUTBOUND-only COUNT, Oct 2026 audit; supersedes an earlier
+#   estimate of 30 that incorrectly included the unrelated label
+#   Completes and double-counted both link directions)
+# Domain: ImplementationArtefact — code realizes design
+# Range: DesignArtefact — realization targets design artefacts
+# Note: tracesTo (Step 3) handles CodeCommit→SprintTask;
+#       realizes handles the higher-level design→implementation link
+
+arto:realizes
+    a owl:ObjectProperty , owl:AsymmetricProperty ;
+    rdfs:label "realizes"@en ;
+    rdfs:comment "An ImplementationArtefact realizes a DesignArtefact by providing a concrete implementation. Literature-grounded, echoing the Satisfaction category of Ramesh and Jarke (2001) rather than a specific named sub-type. TAWOS: Implements (11 links, verified via direct OUTBOUND-only COUNT, Oct 2026 audit; Completes is excluded as an unrelated label). Asymmetric. Distinct from tracesTo (CodeCommit→SprintTask) — realizes captures the higher-level design-to-implementation RT link."@en ;
+    rdfs:domain arto:ImplementationArtefact ;
+    rdfs:range arto:DesignArtefact ;
+    rdfs:subPropertyOf arto:hasTraceLink .
+
+arto:isRealizedBy
+    a owl:ObjectProperty ;
+    rdfs:label "is realized by"@en ;
+    rdfs:comment "Inverse of arto:realizes. Inferred by HermiT — not asserted in ETL."@en ;
+    rdfs:domain arto:DesignArtefact ;
+    rdfs:range arto:ImplementationArtefact ;
+    owl:inverseOf arto:realizes .
+
+
+# ── fixedIn / hasFixFor ───────────────────────────────────────────────
+# Evidence: Fix_Version junction table — 224,254 total rows (verified
+#   via direct COUNT, Oct 2026 audit; supersedes an earlier per-Type
+#   breakdown that undercounted by summing distinct-Bug-with-a-fix-
+#   version rather than total junction rows — real multiplicity:
+#   some issues have dozens of fix_version entries)
+# Domain: AgileArtefact — any artefact can be fixed in a version
+# Range: Version — fix targets a version record
+# Highest-volume deployment RT property in TAWOS
+
+arto:fixedIn
+    a owl:ObjectProperty , owl:AsymmetricProperty ;
+    rdfs:label "fixed in"@en ;
+    rdfs:comment "An AgileArtefact (typically Bug or SprintTask) was resolved in a specific Version. TAWOS: Fix_Version junction table, 224,254 total rows (verified via direct COUNT, Oct 2026 audit). Asymmetric. Highest-volume deployment RT property in TAWOS. Maps directly from Fix_Version.Fixed_Version_ID → Version.ID."@en ;
+    rdfs:domain arto:AgileArtefact ;
+    rdfs:range arto:Version ;
+    rdfs:subPropertyOf arto:hasTraceLink .
+
+arto:hasFixFor
+    a owl:ObjectProperty ;
+    rdfs:label "has fix for"@en ;
+    rdfs:comment "Inverse of arto:fixedIn. A Version has a fix for one or more AgileArtefacts. Inferred by HermiT — not asserted in ETL."@en ;
+    rdfs:domain arto:Version ;
+    rdfs:range arto:AgileArtefact ;
+    owl:inverseOf arto:fixedIn .
+
+
+# ── affectedIn / hasAffected ──────────────────────────────────────────
+# Evidence: Affected_Version junction table — 264,004 total rows
+#   (verified via direct COUNT, Oct 2026 audit; supersedes an earlier
+#   per-Type breakdown that undercounted for the same reason as
+#   fixedIn above — real multiplicity, e.g. one issue with 67
+#   distinct affected-version entries)
+# Domain: AgileArtefact — any artefact can affect a version
+# Range: Version — affected version record
+# Highest-volume single RT property in entire TAWOS dataset
+
+arto:affectedIn
+    a owl:ObjectProperty , owl:AsymmetricProperty ;
+    rdfs:label "affected in"@en ;
+    rdfs:comment "An AgileArtefact (typically Bug) was discovered or reported in a specific Version. TAWOS: Affected_Version junction table, 264,004 total rows (verified via direct COUNT, Oct 2026 audit). Asymmetric. Highest-volume RT property in the entire TAWOS dataset. Maps from Affected_Version.Affected_Version_ID → Version.ID."@en ;
+    rdfs:domain arto:AgileArtefact ;
+    rdfs:range arto:Version ;
+    rdfs:subPropertyOf arto:hasTraceLink .
+
+arto:hasAffected
+    a owl:ObjectProperty ;
+    rdfs:label "has affected"@en ;
+    rdfs:comment "Inverse of arto:affectedIn. A Version has one or more AgileArtefacts discovered in it. Inferred by HermiT — not asserted in ETL."@en ;
+    rdfs:domain arto:Version ;
+    rdfs:range arto:AgileArtefact ;
+    owl:inverseOf arto:affectedIn .
+
+
+# ── containedIn / contains ────────────────────────────────────────────
+# TAWOS evidence: 0 links within this dataset. A direct query against
+#   the live TAWOS database (Oct 2026 audit) confirmed zero
+#   'Containment'-named Issue_Links rows target a Milestone-typed
+#   Version; all 186 such rows target ordinary artefacts (Story 115 /
+#   Improvement 42 / Bug 26 / Epic 3) and are correctly counted under
+#   hasPart instead. An earlier estimate of 55 links was unverified and
+#   is superseded. Property retained, not removed: its Milestone-
+#   containment definition is dataset-independent and intended for
+#   population by future non-TAWOS evaluation datasets; CQ-D2 was
+#   verified successfully against hand-curated pilot sample
+#   individuals, independent of bulk TAWOS extraction.
+# Domain: AgileArtefact — stories and bugs contained in milestones
+# Range: Version — containment targets milestone versions
+# Captures planning-level grouping of artefacts into milestones
+
+arto:containedIn
+    a owl:ObjectProperty , owl:AsymmetricProperty ;
+    rdfs:label "contained in"@en ;
+    rdfs:comment "An AgileArtefact is grouped within a Version milestone. TAWOS: 0 links within this dataset (verified via direct COUNT, Oct 2026 audit — no 'Containment'-named link in TAWOS targets a Milestone-typed Version; an earlier, unverified estimate of 55 is superseded). Retained as a declared property for other datasets and for CQ-D2, which was verified against hand-curated pilot sample individuals rather than bulk TAWOS extraction. Asymmetric. Domain: AgileArtefact. Range: Version (versionType = Milestone)."@en ;
+    rdfs:domain arto:AgileArtefact ;
+    rdfs:range arto:Version ;
+    rdfs:subPropertyOf arto:hasTraceLink .
+
+arto:contains
+    a owl:ObjectProperty ;
+    rdfs:label "contains"@en ;
+    rdfs:comment "Inverse of arto:containedIn. A Version (milestone) contains one or more AgileArtefacts. Inferred by HermiT — not asserted in ETL."@en ;
+    rdfs:domain arto:Version ;
+    rdfs:range arto:AgileArtefact ;
+    owl:inverseOf arto:containedIn .

@@ -1,0 +1,361 @@
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix arto: <http://www.ub.bw/ontologies/arto#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+# ═══════════════════════════════════════════════════════════════════════
+# ARTO — M3 Sprint Module
+# University of Botswana · PhD Research · Tshepho Koboyatshwene
+#
+# Imports: arto-m2-traceability.ttl (which imports full M1 chain)
+#
+# This module provides:
+#   1. SprintBacklog class — set of issues assigned to a Sprint
+#   2. BacklogItem class — individual issue within a SprintBacklog
+#   3. Sprint performance metrics: velocity · throughput · sprintGoal
+#   4. Component data property on AgileArtefact
+#   5. Bridge properties: hasBacklog · hasBacklogItem · inBacklog
+#   6. followsSprint — sprint ordering property
+#
+# TAWOS grounding evidence (Queries 14, 16, 17):
+#   Sprint table: 9 fields confirmed (Step 5 mapped all)
+#   SprintBacklog: Issue WHERE Sprint_ID IS NOT NULL (7,967 total)
+#   BacklogItem:   Same Issue records seen as backlog members
+#   velocity:      SUM(Story_Point WHERE Status IN Done/Closed)
+#                  ETL filter: WHERE Story_Point < 1000
+#                  (outlier detected: Ingalls GA = 26,710,115)
+#   throughput:    COUNT(Issue WHERE Status IN Done/Closed) per sprint
+#   Component:     issue_component junction → componentName data prop
+#                  (not a class — represents project architecture,
+#                   not sprint backlog structure)
+#
+# Agent classes decision:
+#   Developer · ProductOwner · ScrumMaster NOT introduced.
+#   TAWOS User table has only ID and Project_ID — no name,
+#   role, or team data available. Role cannot be determined
+#   from TAWOS data. AgentRole ODP dropped (confirmed Q16/Q17).
+#   Agent information preserved via assigneeId · creatorId ·
+#   reporterId data properties on AgileArtefact.
+#
+# Add to catalog-v001.xml:
+#   <uri name="http://www.ub.bw/ontologies/arto/m3-sprint"
+#        uri="arto-m3-sprint.ttl"/>
+#
+# CQs covered:
+#   CQ1  — story→task→sprint decomposition chain
+#   CQ7  — sprint velocity and throughput metrics
+#   CQ8  — sprint membership queries
+#
+# Load into Protégé 5.6:
+#   Update pilot file to import m3-sprint
+#   Reasoner → HermiT → Start reasoner
+#   Expected: 2 new classes · sprint metrics properties ·
+#             component data property
+# ═══════════════════════════════════════════════════════════════════════
+
+<http://www.ub.bw/ontologies/arto/m3-sprint>
+    a owl:Ontology ;
+    rdfs:label "ARTO M3 Sprint Module"@en ;
+    rdfs:comment "ARTO M3 Sprint Module — SprintBacklog, BacklogItem, sprint performance metrics (velocity, throughput, sprintGoal), component data property, and sprint bridge properties."@en ;
+    owl:imports <http://www.ub.bw/ontologies/arto/m2-traceability> ;
+    owl:versionInfo "1.0.0 — M3: SprintBacklog + BacklogItem + metrics + bridge properties" .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SPRINT PERFORMANCE METRIC DATA PROPERTIES
+# All three directly computable from TAWOS Sprint + Issue tables
+# ETL computation confirmed by Query 17
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:velocity
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "velocity"@en ;
+    rdfs:comment "Sum of Story_Point values for all CLOSED/Done issues in this sprint. TAWOS: SUM(Issue.Story_Point WHERE Sprint_ID = s.ID AND Status IN ('Done','Closed')). ETL outlier filter: WHERE Story_Point < 1000 (Query 17 confirmed data quality issue: Ingalls GA = 26,710,115 story points). Standard Scrum velocity metric. Enables sprint-over-sprint velocity trend analysis for CQ7."@en ;
+    rdfs:domain arto:Sprint ;
+    rdfs:range xsd:decimal .
+
+arto:throughput
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "throughput"@en ;
+    rdfs:comment "Count of issues reaching Done or Closed status in this sprint. TAWOS: COUNT(Issue WHERE Sprint_ID = s.ID AND Status IN ('Done','Closed')). Query 17 confirmed throughput ≈ total_issues for most CLOSED sprints — high completion rate across TAWOS projects. Complements velocity for teams not using story points."@en ;
+    rdfs:domain arto:Sprint ;
+    rdfs:range xsd:integer .
+
+arto:sprintGoal
+    a owl:DatatypeProperty ;
+    rdfs:label "sprint goal"@en ;
+    rdfs:comment "The stated objective of this sprint. TAWOS: partially available from Sprint.Name field — sprint names like 'BACKEND Sprint 17' or 'Ingalls GA' encode implicit goals. Full sprint goal text not stored in TAWOS — populated from Sprint.Name ETL parsing or left NULL for unnamed sprints. Literature-grounded: Scrum Guide sprint goal concept."@en ;
+    rdfs:domain arto:Sprint ;
+    rdfs:range xsd:string .
+
+arto:totalIssues
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "total issues"@en ;
+    rdfs:comment "Total number of issues assigned to this sprint. TAWOS: COUNT(Issue WHERE Sprint_ID = s.ID). Query 17: range 5–87 issues per sprint across top 15 closed sprints. Denominator for sprint completion rate calculation."@en ;
+    rdfs:domain arto:Sprint ;
+    rdfs:range xsd:integer .
+
+arto:completionRate
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "completion rate"@en ;
+    rdfs:comment "Percentage of sprint issues reaching Done/Closed status. Computed by ETL: throughput / totalIssues * 100. Query 17 confirms near-100% completion rate for most CLOSED TAWOS sprints. Key sprint health indicator."@en ;
+    rdfs:domain arto:Sprint ;
+    rdfs:range xsd:decimal .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# COMPONENT DATA PROPERTY
+# Maps from issue_component junction table
+# Component represents project architecture decomposition,
+# not sprint backlog structure — data property not class
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:componentName
+    a owl:DatatypeProperty ;
+    rdfs:label "component name"@en ;
+    rdfs:comment "TAWOS: Component.Name via issue_component junction table. The project component this artefact belongs to e.g. iOS, Android, Sharding, Administration. Represents project architecture decomposition — modelled as data property not class since components have no RT link participation in TAWOS Issue_Links. Top components: iOS (7,815) · Android (7,145) · Sharding (7,135) · Replication (6,712)."@en ;
+    rdfs:domain arto:AgileArtefact ;
+    rdfs:range xsd:string .
+
+arto:componentId
+    a owl:DatatypeProperty ;
+    rdfs:label "component ID"@en ;
+    rdfs:comment "TAWOS: Component.ID (Int). Foreign key from issue_component table. Preserved for provenance and cross-project component matching in M4."@en ;
+    rdfs:domain arto:AgileArtefact ;
+    rdfs:range xsd:integer .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# AGENT DATA PROPERTIES
+# Preserved from TAWOS Issue table foreign keys
+# Agent classes not introduced — User table has only ID + Project_ID
+# No role information available in TAWOS
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:assigneeId
+    a owl:DatatypeProperty ;
+    rdfs:label "assignee ID"@en ;
+    rdfs:comment "TAWOS: Issue.Assignee_ID (Int). Foreign key to User table. Preserves agent assignment information without requiring Agent class individuals — User table has only ID and Project_ID, no name or role data. AgentRole ODP dropped: role cannot be determined from TAWOS data."@en ;
+    rdfs:domain arto:AgileArtefact ;
+    rdfs:range xsd:integer .
+
+arto:creatorId
+    a owl:DatatypeProperty ;
+    rdfs:label "creator ID"@en ;
+    rdfs:comment "TAWOS: Issue.Creator_ID (Int). Foreign key to User table. Who created this artefact in Jira."@en ;
+    rdfs:domain arto:AgileArtefact ;
+    rdfs:range xsd:integer .
+
+arto:reporterId
+    a owl:DatatypeProperty ;
+    rdfs:label "reporter ID"@en ;
+    rdfs:comment "TAWOS: Issue.Reporter_ID (Int). Foreign key to User table. Who reported this artefact — relevant for Bug and SupportRequest traceability."@en ;
+    rdfs:domain arto:AgileArtefact ;
+    rdfs:range xsd:integer .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SPRINTBACKLOG DATA PROPERTIES
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:backlogId
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "backlog ID"@en ;
+    rdfs:comment "Unique identifier for this SprintBacklog. Derived by ETL: Sprint.ID used as backlog ID since each sprint has exactly one backlog. One-to-one relationship with Sprint."@en ;
+    rdfs:domain arto:SprintBacklog ;
+    rdfs:range xsd:integer .
+
+arto:backlogSize
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "backlog size"@en ;
+    rdfs:comment "Total number of BacklogItems in this SprintBacklog at sprint start. TAWOS: COUNT(Issue WHERE Sprint_ID = s.ID). Populated by ETL from Sprint + Issue join."@en ;
+    rdfs:domain arto:SprintBacklog ;
+    rdfs:range xsd:integer .
+
+arto:plannedVelocity
+    a owl:DatatypeProperty ;
+    rdfs:label "planned velocity"@en ;
+    rdfs:comment "Total story points committed at sprint planning. TAWOS: SUM(Issue.Story_Point WHERE Sprint_ID = s.ID AND Story_Point IS NOT NULL). Distinct from arto:velocity which counts only completed items."@en ;
+    rdfs:domain arto:SprintBacklog ;
+    rdfs:range xsd:decimal .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# BACKLOGITEM DATA PROPERTIES
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:backlogItemOrder
+    a owl:DatatypeProperty ;
+    rdfs:label "backlog item order"@en ;
+    rdfs:comment "The priority ordering of this BacklogItem within its SprintBacklog. TAWOS: derived from Issue.Priority field (Highest=1, High=2, Medium=3, Low=4, Lowest=5). Supports sprint planning analysis."@en ;
+    rdfs:domain arto:BacklogItem ;
+    rdfs:range xsd:integer .
+
+arto:isCompleted
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "is completed"@en ;
+    rdfs:comment "Whether this BacklogItem was completed within its sprint. TAWOS: Issue.Status IN ('Done','Closed'). True = completed · False = carried over or incomplete. Core metric for sprint completion rate and velocity calculation."@en ;
+    rdfs:domain arto:BacklogItem ;
+    rdfs:range xsd:boolean .
+
+arto:carriedOver
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "carried over"@en ;
+    rdfs:comment "Whether this BacklogItem was not completed and carried to the next sprint. TAWOS stores only one Sprint_ID per issue (Issue.Sprint_ID, the current or last sprint), so this flag cannot be derived from the Issue table alone. It must be derived from sprint-assignment history, which TAWOS records in change_log rows where Field = 'Sprint' (174,915 rows, Oct 2026 audit). True = the issue appears in more than one sprint assignment there."@en ;
+    rdfs:domain arto:BacklogItem ;
+    rdfs:range xsd:boolean .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# CLASS: arto:SprintBacklog
+# The ordered set of BacklogItems committed to a Sprint.
+# TAWOS grounding: set of Issue records WHERE Sprint_ID = s.ID
+# One SprintBacklog per Sprint (Functional relationship)
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:SprintBacklog
+    a owl:Class ;
+    rdfs:label "Sprint Backlog"@en ;
+    rdfs:comment "The ordered set of BacklogItems committed to a Sprint at sprint planning. TAWOS: set of Issue records WHERE Sprint_ID IS NOT NULL, grouped by Sprint_ID. One SprintBacklog per Sprint — declared Functional on hasBacklog property. Contains UserStory, SprintTask, Bug and other AgileArtefact individuals assigned to the sprint. Bridges Sprint (M3) to AgileArtefact individuals (M1) via hasBacklogItem property."@en ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:backlogId ;
+          owl:cardinality 1 ] ;
+
+    owl:hasKey ( arto:backlogId ) .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# CLASS: arto:BacklogItem
+# An individual AgileArtefact as it appears in a SprintBacklog.
+# TAWOS grounding: Issue WHERE Sprint_ID IS NOT NULL (7,967 total)
+# BacklogItem wraps an AgileArtefact individual adding sprint-
+# specific context (order, completion status, carryover flag)
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:BacklogItem
+    a owl:Class ;
+    rdfs:label "Backlog Item"@en ;
+    rdfs:comment "An AgileArtefact as it appears within a SprintBacklog, carrying sprint-specific context: priority order, completion status, and carryover flag. TAWOS: Issue WHERE Sprint_ID IS NOT NULL (7,967 sprint-assigned issues). BacklogItem is a context-dependent view of an AgileArtefact within a specific sprint — the same AgileArtefact can appear as a BacklogItem in multiple sprints if carried over. Linked to its source AgileArtefact via arto:refersToArtefact property."@en ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:isCompleted ;
+          owl:cardinality 1 ] ;
+
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:carriedOver ;
+          owl:cardinality 1 ] .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# M3 BRIDGE PROPERTIES
+# Connect Sprint → SprintBacklog → BacklogItem → AgileArtefact
+# These bridge M3 sprint context to M1 artefact individuals
+# ═══════════════════════════════════════════════════════════════════════
+
+# ── hasBacklog / isBacklogOf ──────────────────────────────────────────
+# One SprintBacklog per Sprint — Functional
+# Inverse: isBacklogOf (each backlog belongs to one sprint)
+
+arto:hasBacklog
+    a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "has backlog"@en ;
+    rdfs:comment "Links a Sprint to its SprintBacklog. Functional — each Sprint has exactly one SprintBacklog. Core M3 bridge property connecting sprint lifecycle to backlog content."@en ;
+    rdfs:domain arto:Sprint ;
+    rdfs:range arto:SprintBacklog .
+
+arto:isBacklogOf
+    a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "is backlog of"@en ;
+    rdfs:comment "Inverse of arto:hasBacklog. Each SprintBacklog belongs to exactly one Sprint. Functional."@en ;
+    rdfs:domain arto:SprintBacklog ;
+    rdfs:range arto:Sprint ;
+    owl:inverseOf arto:hasBacklog .
+
+
+# ── hasBacklogItem / inBacklog ────────────────────────────────────────
+# SprintBacklog → BacklogItem (one-to-many)
+# Inverse: inBacklog
+
+arto:hasBacklogItem
+    a owl:ObjectProperty ;
+    rdfs:label "has backlog item"@en ;
+    rdfs:comment "Links a SprintBacklog to its constituent BacklogItems. One-to-many — a backlog contains multiple items. Core M3 content property."@en ;
+    rdfs:domain arto:SprintBacklog ;
+    rdfs:range arto:BacklogItem .
+
+arto:inBacklog
+    a owl:ObjectProperty ;
+    rdfs:label "in backlog"@en ;
+    rdfs:comment "Inverse of arto:hasBacklogItem. Each BacklogItem belongs to one SprintBacklog."@en ;
+    rdfs:domain arto:BacklogItem ;
+    rdfs:range arto:SprintBacklog ;
+    owl:inverseOf arto:hasBacklogItem .
+
+
+# ── refersToArtefact / isRepresentedAs ───────────────────────────────
+# BacklogItem → AgileArtefact
+# The core M1-M3 bridge — connects backlog context to artefact identity
+# Functional — each BacklogItem refers to exactly one AgileArtefact
+
+arto:refersToArtefact
+    a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "refers to artefact"@en ;
+    rdfs:comment "Links a BacklogItem to the AgileArtefact it represents in the sprint context. Functional — each BacklogItem refers to exactly one AgileArtefact. Core M1-M3 bridge: BacklogItem(M3) → AgileArtefact(M1). Enables CQ1 sprint decomposition queries: which UserStories are in sprint X?"@en ;
+    rdfs:domain arto:BacklogItem ;
+    rdfs:range arto:AgileArtefact .
+
+arto:isRepresentedAs
+    a owl:ObjectProperty ;
+    rdfs:label "is represented as"@en ;
+    rdfs:comment "Inverse of arto:refersToArtefact. An AgileArtefact can be represented as a BacklogItem in multiple sprints (if carried over)."@en ;
+    rdfs:domain arto:AgileArtefact ;
+    rdfs:range arto:BacklogItem ;
+    owl:inverseOf arto:refersToArtefact .
+
+
+# ── followsSprint / precedesSprint ───────────────────────────────────
+# Sprint ordering property — Asymmetric, Irreflexive
+# TAWOS: derived from Sprint.Start_Date ordering within same project
+# Enables sprint sequence analysis and velocity trend queries
+
+arto:followsSprint
+    a owl:ObjectProperty , owl:AsymmetricProperty , owl:IrreflexiveProperty ;
+    rdfs:label "follows sprint"@en ;
+    rdfs:comment "Links a Sprint to the Sprint that immediately preceded it within the same project: 'B followsSprint A' means A is the earlier sprint. TAWOS: derived from Sprint.Start_Date ordering WHERE Project_ID = same AND Start_Date IS NOT NULL. Asymmetric and Irreflexive. Enables sprint sequence analysis and multi-sprint velocity trend queries for CQ7."@en ;
+    rdfs:domain arto:Sprint ;
+    rdfs:range arto:Sprint .
+
+arto:precedesSprint
+    a owl:ObjectProperty ;
+    rdfs:label "precedes sprint"@en ;
+    rdfs:comment "Inverse of arto:followsSprint: 'A precedesSprint B' means B follows A, i.e. A is the earlier sprint. Inferred by HermiT — not asserted in ETL. Named precedesSprint rather than isFollowedBy because isFollowedBy is already the inverse of arto:follows."@en ;
+    rdfs:domain arto:Sprint ;
+    rdfs:range arto:Sprint ;
+    owl:inverseOf arto:followsSprint .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SPRINT MEMBERSHIP CONSTRAINT
+# Each UserStory and SprintTask belongs to exactly one Sprint
+# per iteration (Functional constraint on belongsToSprint)
+# Already declared in Step 5 — re-confirmed here for M3 context
+# ═══════════════════════════════════════════════════════════════════════
+
+arto:UserStory
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:belongsToSprint ;
+          owl:maxCardinality 1 ] .
+
+arto:SprintTask
+    rdfs:subClassOf
+        [ a owl:Restriction ;
+          owl:onProperty arto:belongsToSprint ;
+          owl:maxCardinality 1 ] .
+

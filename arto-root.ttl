@@ -1,0 +1,424 @@
+@prefix : <http://www.semanticweb.org/owl/owlapi/turtle#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix arto: <http://www.ub.bw/ontologies/arto#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@base <http://www.ub.bw/ontologies/arto/root> .
+
+<http://www.ub.bw/ontologies/arto/root> rdf:type owl:Ontology ;
+                                        
+                                        rdfs:label "ARTO — Agile Requirements Traceability Ontology"@en ;
+                                        
+                                        dct:created "2026"^^xsd:gYear ;
+                                        
+                                        dc:contributor "University of Botswana" ;
+                                        
+                                        dc:subject "Requirements Traceability · Agile Software Development · OWL-DL · TAWOS · NeOn · METHONTOLOGY" ;
+                                        
+                                        dc:creator "Tshepho Koboyatshwene" ;
+                                        
+                                        owl:versionInfo "1.2.0 — rule and SKOS documentation aligned with executable rules (R1–R2 in M2, R3 in M4, run by HermiT in Protégé 4.3); R4 documentation only; OrphanArtefact two-way; SKOS counts corrected. 1.1.0 — fabricated IRIs removed · ODP imports removed · honest reuse documentation" ;
+                                        
+                                        dc:description "Agile Requirements Traceability Ontology — a modular OWL-DL network for formally representing and querying traceability links across Agile software artefacts. Built on the TAWOS dataset (39 real Agile projects, 456,000+ issues). PhD research, University of Botswana, 2026."@en ;
+                                        
+                                        dc:rights "University of Botswana PhD Research — Tshepho Koboyatshwene 2026" ;
+                                        
+                                        dct:license <http://www.ub.bw/ontologies/arto/LICENCE> ;
+                                        
+                                        rdfs:comment "Root ontology for the ARTO network. Imports all four modules (M1 Artefact · M2 Traceability · M3 Sprint · M4 Semantic Resolution) and declares five bridge axioms connecting the modules. S3 reuse of ontological resources (Lapeña 2019 · Pakdeetrakulwong 2015) documented honestly as intent not executed due to OWL file unavailability. S7 ODP reuse documented at conceptual instantiation level with rdfs:isDefinedBy citations in module files. Licence: all rights reserved — this ontology is unpublished PhD research (University of Botswana, 2026) and is not licensed for reuse or redistribution pending examination and the author's decision on a formal publication licence; see dct:license."@en ;
+                                        
+                                        owl:imports <http://www.ub.bw/ontologies/arto/m1-pilot> .
+
+
+#################################################################
+#
+#    Object Properties
+#
+#################################################################
+
+
+###  http://www.ub.bw/ontologies/arto#hasTraceLink
+
+arto:hasTraceLink rdfs:comment """S3 REUSE INTENT (not executed) — NeOn scenario S3, reuse of ontological resources:
+arto:hasTraceLink was designed with Pakdeetrakulwong et al. (2015) in view —
+An Ontology-Based Multi-Agent System to Support Requirements Traceability in
+Multi-Site Software Development Environment. Proceedings of the ASWEC 2015
+24th Australasian Software Engineering Conference, Vol. II, pp. 96-100. ACM.
+DOI: 10.1145/2811681.2811700.
+
+CORRECTION (Oct 2026): an earlier version of this annotation described a
+TraceLink concept in that paper, cited it under a different title and venue
+(International Journal of Software Engineering and Its Applications, Vol 9(2)),
+and recorded an intended bridge axiom arto:TraceLink owl:equivalentClass
+pakdee:TraceLink. Neither the title/venue nor the TraceLink concept matches the
+ASWEC 2015 paper cited in this thesis. That paper defines no TraceLink class: it
+layers three requirement-interdependency relations (Requires, Refines,
+Conflicts_with), adapted from Dahlstedt and Persson, and a table of change-impact
+rules on the Software Engineering Ontology of Wongthongtham et al. (2009). No
+bridge axiom was therefore possible, and none is declared.
+
+The paper's ontology OWL file was also not publicly available at implementation
+time (same barrier as noted on arto:AgileArtefact below). The alignment is
+preserved here via this rdfs:comment annotation only. What ARTO shares with the
+paper is the purpose of change-impact analysis over linked artefacts: its impact
+rules anticipate, in simplified form, ARTO's arto:impacts property (derived
+by SWRL rule R1 and extended by its owl:TransitiveProperty declaration)."""@en ;
+                  
+                  rdfs:domain arto:AgileArtefact ;
+                  
+                  rdfs:range arto:AgileArtefact .
+
+
+
+###  http://www.ub.bw/ontologies/arto#impacts
+
+arto:impacts rdfs:subPropertyOf arto:hasTraceLink .
+
+
+
+
+
+#################################################################
+#
+#    Classes
+#
+#################################################################
+
+
+###  http://www.ub.bw/ontologies/arto#AgileArtefact
+
+arto:AgileArtefact rdfs:comment """S3 REUSE INTENT (not executed) — NeOn scenario S3, reuse of ontological resources:
+arto:AgileArtefact was designed with Lapeña et al. (2019) in view — Improving
+Traceability Links Recovery in Process Models through an Ontological Expansion of
+Requirements. Advanced Information Systems Engineering (CAiSE 2019), LNCS 11483.
+DOI: 10.1007/978-3-030-21290-2_17.
+
+CORRECTION (Oct 2026): an earlier version of this annotation cited this paper
+under a different title, venue and DOI (An Ontology for Software Traceability,
+Requirements Engineering journal), described an Artefact class in it, and
+recorded an intended bridge axiom arto:AgileArtefact rdfs:subClassOf
+lapena:Artefact. None of that matches the CAiSE 2019 paper cited in this thesis.
+Its ontology is a domain vocabulary of 27 concepts and 176 relationships
+describing railway engineering terms, supplied by the authors' industrial
+partner and used to expand requirement text before Latent Semantic Indexing. It
+defines no artefact class, so no bridge axiom was possible, and none is declared.
+
+The paper does not state that this ontology is published (LORE's implementation
+code is open source) — a known practical barrier to ontology reuse documented by
+Martínez-García et al. (2022) as one of the top three impediments to S3 reuse in
+academic ontology projects.
+
+The intellectual alignment is preserved here via this rdfs:comment annotation
+only. ARTO's AgileArtefact class is not aligned with any class in that ontology;
+what the two works share is a concern with vocabulary mismatch between
+requirement text and the artefacts it is traced to, which ARTO addresses
+structurally through M4's synonym clusters."""@en .
+
+
+
+###  http://www.ub.bw/ontologies/arto#SprintTask
+
+arto:SprintTask rdfs:subClassOf [ rdf:type owl:Restriction ;
+                                  owl:onProperty arto:belongsToSprint ;
+                                  owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                                ] .
+
+
+
+###  http://www.ub.bw/ontologies/arto#UserStory
+
+arto:UserStory rdfs:subClassOf [ rdf:type owl:Restriction ;
+                                 owl:onProperty arto:belongsToSprint ;
+                                 owl:maxCardinality "1"^^xsd:nonNegativeInteger
+                               ] .
+
+
+
+
+
+#################################################################
+#
+#    Individuals
+#
+#################################################################
+
+
+###  http://www.ub.bw/ontologies/arto#ARTONetwork
+
+arto:ARTONetwork rdf:type owl:NamedIndividual ;
+                 
+                 rdfs:label "ARTO Network Metadata"@en ;
+                 
+                 rdfs:comment """ARTO Network Structure (v1.2.0)
+
+MODULES:
+  M1 Artefact Module (5 steps — arto-m1-step1-v5 to step5):
+    Classes: 30 (7 SDLC abstracts + 22 leaf classes + OrphanArtefact)
+    RT Properties: 24 + 21 inverses + hasTraceLink superproperty
+    ODP: Part-Whole (hasPart) · Event (Sprint) — conceptual level
+    TAWOS grounding: Queries 1-12 (15 SQL queries total)
+    Key decision: DefectArtefact migrated under MaintenanceArtefact
+                  in Step 5; DesignArtefact for multi-dataset
+                  comparability (zero TAWOS, excluded from Part 9)
+
+  M2 Traceability Module (arto-m2-traceability):
+    Classes: TraceLink + AssertedLink + InferredLink +
+             ForwardSDLCLink + BackwardSDLCLink + CrossCuttingLink
+    Controlled vocabulary: TraceLinkType + 7 named individuals
+    Rules: R1 impact inference (CQ4) · R2 test coverage (CQ3/CQ5)
+           encoded here as executable SWRL (R1a–R1e, R2a–R2b).
+           R3 (CQ8) is encoded in M4. R4 (CQ5) is documentation only:
+           orphan detection needs negation, which SWRL cannot express.
+    Key property: impacts (Transitive + SubPropertyOf hasTraceLink)
+    sdlcLinkDirection: set by ETL (Forward/Backward/CrossCutting/
+                       Horizontal) via SDLC phase lookup table
+
+  M3 Sprint Module (arto-m3-sprint):
+    Classes: SprintBacklog · BacklogItem
+    Metrics: velocity · throughput · completionRate · totalIssues
+    Bridge chain: Sprint→hasBacklog→SprintBacklog→
+                  hasBacklogItem→BacklogItem→refersToArtefact→
+                  AgileArtefact
+    Agent: assigneeId/creatorId/reporterId as data properties
+           (AgentRole ODP dropped — User table has only ID)
+    TAWOS: Queries 14, 16, 17 confirmed velocity/throughput
+
+  M4 Semantic Resolution Module (arto-m4-semantic):
+    Classes: TermVariant · SynonymCluster · DriftEvent
+    SKOS: exactMatch and closeMatch declared as object properties
+          (not imported; no symmetry or transitivity asserted)
+          exactMatch: 4 class-level mappings (M4) + 2 pilot pairs
+                      (story_001/story_equiv · bug_001/bug_equiv)
+          closeMatch: 6 class-level mappings
+    SWRL R3: R3a forward · R3b backward · R3c impacts propagation
+             across exact synonyms (executable, encoded in M4)
+    DriftEvent: lightweight from Change_Log WHERE Field=summary
+                (full integration deferred — MySQL timeout)
+    ETL synonym detection: Duplicate Issue_Links co-occurrence
+
+BRIDGE AXIOMS (5 active):
+  BA3: hasTraceLink domain/range AgileArtefact (M1→M2)
+  BA4: UserStory belongsToSprint Sprint maxCard 1 (M1→M3)
+  BA5: SprintTask belongsToSprint Sprint maxCard 1 (M1→M3)
+  BA6: TermVariant refersToIssue AgileArtefact (M4→M1)
+  BA7: impacts SubPropertyOf hasTraceLink (M2 SWRL→M1)
+
+REUSE SUMMARY (NeOn scenario numbers corrected Oct 2026 to match
+the canonical NeOn numbering; see Chapter 6, Section 6.4):
+  S3 (reuse of ontological resources): INTENT not executed — Lapeña
+     (2019) and Pakdeetrakulwong (2015) OWL files unavailable.
+     Documented via rdfs:comment annotations. No fabricated IRIs
+     declared.
+  S2 (re-engineering from a non-ontological resource): TAWOS SQL
+     queries → OWL-DL RT property hierarchy (24 properties, 7
+     semantic clusters). Ramesh and Jarke's (2001) four top-level
+     categories provided coarse-grained structuring influence only
+     — the 24 properties were not derived from specific named
+     sub-types in their taxonomy (see Chapter 6, Section 6.5).
+  S7 (reuse of ontology design patterns): Part-Whole + Event ODPs
+     at conceptual instantiation level. rdfs:isDefinedBy in module
+     files.
+     owl:imports of ODP files not used — avoids namespace
+     conflicts without CQ benefit.
+  S2 (conversion, continued): the TAWOS relational schema was converted
+     to OWL via 15 SQL queries; Agile glossary synonyms → SKOS in M4.
+
+COMPETENCY QUESTIONS:
+  CQ1: story→task decomposition + sprint context
+  CQ2: bug→story defect traceability
+  CQ3: test coverage gaps (verifies + SPARQL MINUS)
+  CQ4: impact propagation (SWRL R1 + impacts transitivity)
+  CQ5: orphan artefact detection (OrphanArtefact + SPARQL MINUS)
+  CQ6: inferred vs asserted link ratio (isInferred on TraceLink)
+  CQ7: link type distribution (TraceLinkType 7 clusters)
+  CQ8: synonym resolution (skos:exactMatch + SWRL R3)
+
+TAWOS EVALUATION SCOPE (Part 9):
+  INCLUDED: Epic · UserStory · Suggestion · Improvement ·
+            NewFeature · SprintTask · Bug · TestCase ·
+            Version · PlannedRelease · Documentation ·
+            SupportRequest · BuildFailure · ProblemTicket ·
+            SprintBacklog · BacklogItem · TermVariant ·
+            SynonymCluster · DriftEvent
+  EXCLUDED (zero TAWOS individuals, N/A in metrics):
+            CodeCommit · TestResult · ArchitectureDocument ·
+            DesignModel · Prototype
+  EVALUATION: per-class precision/recall/F1 + macro/micro avg
+  BASELINE: VSM + LSI keyword matching (same TAWOS projects)
+  ABLATION: ARTO without SWRL rules (no R1–R3) as control"""@en .
+
+
+
+###  http://www.ub.bw/ontologies/arto#BA3_Bridge
+
+arto:BA3_Bridge rdf:type owl:NamedIndividual ;
+                
+                rdfs:label "BA3 — M1→M2 Bridge"@en ;
+                
+                rdfs:comment "BRIDGE AXIOM BA3: hasTraceLink domain and range declared on AgileArtefact — connects M1 artefact individuals to M2 traceability properties. All 24 RT properties are SubPropertyOf hasTraceLink. SWRL rules R1 and R2 (M2) and R3 (M4) fire on AgileArtefact individuals loaded from M1 module files."@en .
+
+
+
+###  http://www.ub.bw/ontologies/arto#BA4_Bridge
+
+arto:BA4_Bridge rdf:type owl:NamedIndividual ;
+                
+                rdfs:label "BA4 — M1→M3 UserStory-Sprint Bridge"@en ;
+                
+                rdfs:comment "BRIDGE AXIOM BA4: UserStory belongsToSprint Sprint (maxCardinality 1). Connects M1 RequirementsArtefact individuals to M3 Sprint individuals. Required for CQ1 sprint context queries. Each UserStory assigned to at most one Sprint per iteration — enforced as maxCardinality restriction at root level."@en .
+
+
+
+###  http://www.ub.bw/ontologies/arto#BA5_Bridge
+
+arto:BA5_Bridge rdf:type owl:NamedIndividual ;
+                
+                rdfs:label "BA5 — M1→M3 SprintTask-Backlog Bridge"@en ;
+                
+                rdfs:comment "BRIDGE AXIOM BA5: SprintTask individuals appear as BacklogItem individuals in SprintBacklogs via arto:refersToArtefact (M3). SprintTask also carries belongsToSprint (maxCardinality 1) at root level. Connects M1 ImplementationArtefact individuals to M3 sprint planning structure. Required for full chain query: Sprint→SprintBacklog→BacklogItem→SprintTask."@en .
+
+
+
+###  http://www.ub.bw/ontologies/arto#BA6_Bridge
+
+arto:BA6_Bridge rdf:type owl:NamedIndividual ;
+                
+                rdfs:label "BA6 — M4→M1 TermVariant-Artefact Bridge"@en ;
+                
+                rdfs:comment "BRIDGE AXIOM BA6: TermVariant refersToIssue AgileArtefact (Functional). Connects M4 semantic resolution individuals to M1 artefact individuals. Core M4-M1 bridge: when two TermVariants in the same SynonymCluster refer to artefacts in different projects, skos:exactMatch declared between those artefacts enables SWRL Rule R3 to propagate trace links across project boundaries. Required for CQ8."@en .
+
+
+
+###  http://www.ub.bw/ontologies/arto#BA7_Bridge
+
+arto:BA7_Bridge rdf:type owl:NamedIndividual ;
+                
+                rdfs:label "BA7 — M2 SWRL→M1 impacts Bridge"@en ;
+                
+                rdfs:comment "BRIDGE AXIOM BA7: impacts SubPropertyOf hasTraceLink. Ensures every impacts link, whether asserted, derived by SWRL R1, or extended by the transitivity of impacts, also counts as a hasTraceLink for the reasoner. Without this bridge, inferred impacts would not appear in hasTraceLink-based coverage. Note: Protégé's embedded SPARQL engine reads asserted triples only, so inferred links reach the CQ5 MINUS query only once they are materialised. Also makes hasTraceLink non-simple (impacts is transitive), which is why no cardinality restriction is placed on hasTraceLink. Critical for CQ4 (impact propagation) and CQ5 (orphan detection)."@en .
+
+
+
+###  http://www.ub.bw/ontologies/arto#S7ReuseDocumentation
+
+arto:S7ReuseDocumentation rdf:type owl:NamedIndividual ;
+                          
+                          rdfs:label "S7 ODP Reuse Documentation"@en ;
+                          
+                          rdfs:comment """S7 CONTENT ODP REUSE — Conceptual Instantiation Level
+
+PART-WHOLE CONTENT ODP:
+  Source: http://ontologydesignpatterns.org/cp/owl/partof.owl
+  ARTO instantiation:
+    arto:hasPart / arto:isPartOf follow Part-Whole ODP pattern
+    arto:AgileArtefact plays both Part and Whole roles
+    rdfs:isDefinedBy declared on hasPart in arto-m1-step4.ttl
+  Why owl:imports not used:
+    Importing partof.owl would introduce odp:Part and odp:Whole
+    classes alongside ARTO's existing hierarchy, requiring
+    owl:equivalentProperty between odp:hasPart and arto:hasPart.
+    This adds axioms that provide no additional CQ coverage
+    and clutters the Protégé class hierarchy with unused ODP
+    template classes. Level 1 (conceptual instantiation with
+    rdfs:isDefinedBy) is the standard in published ontology
+    engineering practice and fully satisfies the NeOn S7 scenario.
+
+EVENT CONTENT ODP:
+  Source: http://ontologydesignpatterns.org/cp/owl/
+          timeindexedsituation.owl
+  ARTO instantiation:
+    arto:Sprint rdfs:subClassOf arto:Event
+    arto:Event provides hasEventStatus; the pattern's time interval is realised by
+    Sprint's startDate / endDate data properties
+    rdfs:isDefinedBy declared on Sprint in arto-m1-step4.ttl
+  Why owl:imports not used:
+    Same rationale as Part-Whole. The Event ODP defines
+    Event, TimeInterval, Object, and Situation as interlinked
+    classes — importing these would require mapping each to
+    ARTO equivalents (Sprint↔Event, startDate↔TimeInterval)
+    without adding CQ coverage. The conceptual pattern is
+    followed and cited; formal import is not required.
+
+THESIS CLAIM:
+  S7 executed at conceptual instantiation level — the standard
+  form of ODP reuse in published ontology engineering. Both ODPs
+  are cited via rdfs:isDefinedBy in the relevant module files.
+  This satisfies the NeOn S7 scenario requirement that ODP
+  patterns are applied and their sources are formally attributed."""@en .
+
+
+
+###  http://www.ub.bw/ontologies/arto#SWRLRegistry
+
+arto:SWRLRegistry rdf:type owl:NamedIndividual ;
+                  
+                  rdfs:label "ARTO SWRL Rules Registry"@en ;
+                  
+                  rdfs:comment """ARTO SWRL Rules — registry (documentation)
+
+EXECUTION: the rules are encoded as swrl:Imp in the module files and
+load automatically into Protégé 4.3's Rules view
+(Window → Views → Ontology views → Rules). They are DL-safe, so
+HermiT applies them during reasoning; no separate rule engine is
+used. 10 executable rules in total: R1a–R1e and R2a–R2b in M2,
+R3a–R3c in M4. Inferred values appear in the Individuals tab;
+Protégé's SPARQL engine reads asserted triples only.
+
+R1 — Impact Inference (CQ4) [M2] — R1a–R1e:
+Not itself a transitivity rule: chaining comes from impacts being
+owl:TransitiveProperty.
+UserStory(?s) ^ hasImplementingTask(?s,?t) ^ SprintTask(?t)
+  -> impacts(?s,?t)
+UserStory(?s) ^ hasImplementingTask(?s,?t) ^ tracesTo(?t,?c)
+  ^ CodeCommit(?c) -> impacts(?s,?c)
+Bug(?b) ^ reportedIn(?b,?s) ^ UserStory(?s)
+  -> impacts(?b,?s)
+Bug(?b) ^ causes(?b,?b2) ^ Bug(?b2)
+  -> impacts(?b,?b2)
+Bug(?b) ^ blocks(?b,?s) ^ UserStory(?s)
+  -> impacts(?b,?s)            [R1e]
+reportedIn has no TAWOS source, so R1c fires on the pilot only.
+
+R2 — Test Coverage Inference (CQ3/CQ5) [M2] — R2a–R2b:
+TestCase(?tc) ^ verifies(?tc,?s) ^ UserStory(?s)
+  -> hasTraceLink(?s,?tc)
+TestCase(?tc) ^ verifies(?tc,?b) ^ Bug(?b)
+  -> hasTraceLink(?b,?tc)
+
+R3 — Semantic Equivalence Propagation (CQ8) [M4] — R3a–R3c:
+R3a: AgileArtefact(?v1) ^ AgileArtefact(?v2) ^
+     skos:exactMatch(?v1,?v2) ^ hasTraceLink(?v1,?l)
+     -> hasTraceLink(?v2,?l)
+R3b: AgileArtefact(?v1) ^ AgileArtefact(?v2) ^
+     skos:exactMatch(?v1,?v2) ^ hasTraceLink(?v2,?l)
+     -> hasTraceLink(?v1,?l)
+R3c: AgileArtefact(?v1) ^ AgileArtefact(?v2) ^
+     skos:exactMatch(?v1,?v2) ^ impacts(?v1,?t)
+     -> impacts(?v2,?t)
+R3b is required: SKOS is not imported and exactMatch is not declared
+symmetric, so the reasoner does not infer the reverse of a pair.
+
+R4 — OrphanArtefact Classification (CQ5) — documentation only:
+Not a rule. Orphan detection needs negation, which SWRL cannot express.
+OrphanArtefact is defined in M1 Step 2 (two-way):
+  OrphanArtefact ≡ AgileArtefact ⊓ ¬∃hasTraceLink.⊤ ⊓ ¬∃hasTraceLink⁻.⊤
+Under the open world assumption HermiT never classifies a populated
+individual into it. CQ5 is answered by SPARQL MINUS (closed world),
+checking both directions:
+  SELECT ?a WHERE {
+    ?a a ?type .
+    ?type rdfs:subClassOf* arto:AgileArtefact .
+    MINUS { ?a arto:hasTraceLink ?out . }
+    MINUS { ?in arto:hasTraceLink ?a . }
+  }"""@en .
+
+
+
+
+###  Generated by the OWL API (version 3.4.2) http://owlapi.sourceforge.net
+
